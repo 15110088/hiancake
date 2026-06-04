@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>HiAn Cake - Flipbook</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Phê La: Playfair Display (tiêu đề) + Quicksand (nội dung) -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="book-container">
+        <div class="flipbook-shell" id="flipbook-shell">
+            <button id="prev-btn" class="nav-btn nav-btn--prev" type="button" aria-label="Trang trước"><i class="fas fa-chevron-left"></i></button>
+            <div class="book-stage" id="book-stage">
+                <div id="book" class="book">
+            
+            <!-- Paper 1: Cover & About Us -->
+            <div class="paper" id="p1">
+                <div class="front cover-layout cover-layout--brand">
+                    <img data-img-key="p1_cover_bg" alt="" class="cover-brand-bg" aria-hidden="true">
+                    <div class="cover-brand">
+                        <img data-img-key="p1_logo" alt="HiAn Cake" class="cover-brand-logo">
+                        <p class="cover-brand-arc">Homemade Artisan Cake</p>
+                        <h1 class="cover-brand-name">HianCake Sweetcreations</h1>
+                        <p class="cover-brand-slogan">Bánh thủ công — ngọt từng khoảnh khắc</p>
+                    </div>
+                </div>
+                
+                <div class="back">
+                    <div class="bento-grid bento-grid--portrait-mosaic">
+                        <div class="bento-card span-6 bento-card--heading">
+                            <span class="subtitle">HiAn Cake</span>
+                            <h2 class="giant-title">Cầu đồng khởi,Phường Trảng Dài, Thành Phó Đồng Nai</h2>
+                        </div>
+                        <div class="bento-card span-2 row-3 bento-card--photo">
+                            <div class="bento-img-wrap bento-frame bento-frame--portrait">
+                                <img data-img-key="p1_about_hero" alt="HiAn Cake">
+                            </div>
+                            <p class="bento-slogan" contenteditable="true">Bánh thủ công từ tâm</p>
+                        </div>
+                        <div class="bento-card span-2 row-3 bento-card--photo">
+                            <div class="bento-img-wrap bento-frame bento-frame--portrait">
+                                <img data-img-key="p1_about_panel1" alt="Bánh 1">
+                            </div>
+                            <p class="bento-slogan" contenteditable="true">HiAn Cake — ngọt từ lò</p>
+                        </div>
+                        <div class="bento-card span-2 row-3 bento-card--photo">
+                            <div class="bento-img-wrap bento-frame bento-frame--portrait">
+                                <img data-img-key="p1_about_panel2" alt="Bánh 2">
+                            </div>
+                            <p class="bento-slogan" contenteditable="true">Homemade — nướng mỗi ngày</p>
+                        </div>
+                        <div class="bento-card span-2 row-3 bento-card--photo">
+                            <div class="bento-img-wrap bento-frame bento-frame--portrait">
+                                <img data-img-key="p1_about_panel3" alt="Bánh 3">
+                            </div>
+                            <p class="bento-slogan" contenteditable="true">Artisan — từng chi tiết</p>
+                        </div>
+                        <div class="bento-card span-2 row-3 bento-card--photo">
+                            <div class="bento-img-wrap bento-frame bento-frame--portrait">
+                                <img data-img-key="p1_about_4" alt="Bánh 4">
+                            </div>
+                            <p class="bento-slogan" contenteditable="true">Ngọt từng lớp kem</p>
+                        </div>
+                        <div class="bento-card span-2 row-3 bento-card--photo">
+                            <div class="bento-img-wrap bento-frame bento-frame--portrait">
+                                <img data-img-key="p1_about_5" alt="Bánh 5">
+                            </div>
+                            <p class="bento-slogan" contenteditable="true">Mỗi chiếc là quà tặng</p>
+                        </div>
+                    </div>
+                    <span class="page-num">02</span>
+                </div>
+            </div>
+
+            <!-- Paper 2: Contents & Birthday Intro -->
+            <div class="paper" id="p2">
+                <div class="front">
+                    <div class="bento-grid bento-grid--portrait-mosaic">
+                        <div class="bento-card span-6 bento-card--heading">
+                            <span class="subtitle">Liên hệ</span>
+                            <h2 class="giant-title">0966.755.282</h2>
+                        </div>
+                        <div class="bento-card span-2 row-3 bento-card--photo">
+                            <div class="bento-img-wrap bento-frame bento-frame--portrait">
+                                <img data-img-key="p2_content1" alt="Bánh kem">
+                            </div>
+                            <p class="bento-slogan" contenteditable="true">Kem bơ cao cấp</p>
+                        </div>
+                        <div class="bento-card span-2 row-3 bento-card--photo">
+                            <div class="bento-img-wrap bento-frame bento-frame--portrait">
+                                <img data-img-key="p2_content2" alt="Bánh sinh nhật">
+                            </div>
+                            <p class="bento-slogan" contenteditable="true">Sinh nhật rực rỡ</p>
+                        </div>
+                        <div class="bento-card span-2 row-3 bento-card--photo">
+                            <div class="bento-img-wrap bento-frame bento-frame--portrait">
+                                <img data-img-key="p2_content3" alt="Bánh hoa">
+                            </div>
+                            <p class="bento-slogan" contenteditable="true">Hoa trên bánh</p>
+                        </div>
+                        <div class="bento-card span-2 row-3 bento-card--photo">
+                            <div class="bento-img-wrap bento-frame bento-frame--portrait">
+                                <img data-img-key="p2_content4" alt="Bánh chocolate">
+                            </div>
+                            <p class="bento-slogan" contenteditable="true">Chocolate đậm vị</p>
+                        </div>
+                        <div class="bento-card span-2 row-3 bento-card--photo">
+                            <div class="bento-img-wrap bento-frame bento-frame--portrait">
+                                <img data-img-key="p2_content5" alt="Bánh chocolate">
+                            </div>
+                            <p class="bento-slogan" contenteditable="true">Hương thơm</p>
+                        </div>
+                        <div class="bento-card span-2 row-3 bento-card--photo">
+                            <div class="bento-img-wrap bento-frame bento-frame--portrait">
+                                <img data-img-key="p2_content6" alt="Bánh chocolate">
+                            </div>
+                            <p class="bento-slogan" contenteditable="true">Ngọt ngào</p>
+                        </div>
+                    </div>
+                    <span class="page-num">03</span>
+                </div>
+               
+                
+                <div class="back">
+                    <div class="bento-grid">
+                        <div class="bento-card span-4 row-2">
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="visual_gift_story" alt="Quà sinh nhật HiAn Cake">
+                            </div>
+                        </div>
+                        <div class="bento-card span-2 row-4">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p3_tart_sub" alt="Presents">
+                            </div>
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p2_sparkler_sub" alt="Presents">
+                            </div>
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p3_presents" alt="Presents">
+                            </div>
+                        </div>
+                        <div class="bento-card span-4 row-2">
+                            <span class="subtitle">Gift Set Pack</span>
+                            <h2 class="title-gold">BIRTHDAY GIFT</h2>
+                            <div style="display:flex; gap: 8px; margin-top: 8px; flex:1; min-height: 0;">
+                                <div style="flex:1;"><img data-img-key="p3_flower" alt="Gift Flower" style="height:100%;"></div>
+                                <div style="flex:1;"><img data-img-key="p3_gift" alt="Gift Box" style="height:100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="page-num">06</span>
+                </div>
+            </div>
+
+            <!-- Paper 4: Birthday Cake details & Birthday Party -->
+            <div class="paper" id="p4">
+                <div class="front">
+                    <div class="bento-grid">
+                        <div class="bento-card span-3 row-2">
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="p4_birthday_hero" alt="Bánh sinh nhật HiAn Cake">
+                            </div>
+                        </div>
+                        <div class="bento-card span-3 row-2">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p4_cake_top" alt="Main Cake">
+                            </div>
+                        </div>
+                        <div class="bento-card span-4 row-2">
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="visual_flavors" alt="Hương vị HiAn Cake">
+                            </div>
+                        </div>
+                        <div class="bento-card span-2 row-2">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p3_tart" alt="Sub Cake 1">
+                            </div>
+                        </div>
+                        <div class="bento-card span-2">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p4_cake_sub2" alt="Sub Cake 2">
+                            </div>
+                        </div>
+                        <div class="bento-card span-2">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p4_gift_box" alt="Gift Box Sub">
+                            </div>
+                        </div>
+                        <div class="bento-card span-2">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p4_cake_bottom" alt="Cake serving">
+                            </div>
+                        </div>
+                    </div>
+                    <span class="page-num">07</span>
+                </div>
+                
+                <div class="back">
+                    <div class="bento-grid">
+                        <div class="bento-card span-6 row-2">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p4_party_top" alt="Party Sweet Table">
+                            </div>
+                        </div>
+                        <div class="bento-card span-6 row-2">
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="p4_party_bottom" alt="Tiệc sinh nhật HiAn Cake">
+                            </div>
+                        </div>
+                    </div>
+                    <span class="page-num">08</span>
+                </div>
+            </div>
+
+            <!-- Paper 5: Music Player page & Crispy Cookies -->
+            <div class="paper" id="p5">
+                <div class="front">
+                    <div class="bento-grid">
+                        <div class="bento-card span-6 row-2">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p5_dessert_top" alt="Fancy Dessert">
+                            </div>
+                        </div>
+                        
+                        <!-- Premium Mock Player Bento Card -->
+                        <div class="bento-card span-6" style="padding: 15px;">
+                            <div class="mock-player" id="mp-1">
+                                <div class="player-controls">
+                                    <button class="player-btn"><i class="fas fa-undo"></i></button>
+                                    <button class="player-btn"><i class="fas fa-play"></i></button>
+                                    <button class="player-btn"><i class="fas fa-volume-up"></i></button>
+                                </div>
+                                <div class="player-progress-container">
+                                    <div class="player-progress">
+                                        <div class="progress-bar-line"></div>
+                                        <div class="progress-handle"></div>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; width:100%;">
+                                        <span class="subtitle" style="font-size:8px;">Sweet Symphony</span>
+                                        <span class="player-time">00.00 / 00.45</span>
+                                    </div>
+                                </div>
+                                <!-- Music visualizer micro-interaction -->
+                                <div class="music-visualizer">
+                                    <span class="visualizer-bar"></span>
+                                    <span class="visualizer-bar"></span>
+                                    <span class="visualizer-bar"></span>
+                                    <span class="visualizer-bar"></span>
+                                    <span class="visualizer-bar"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bento-card span-6 row-2">
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="p5_dessert_bottom" alt="HiAn Cake — sinh nhật">
+                            </div>
+                        </div>
+                    </div>
+                    <span class="page-num">09</span>
+                </div>
+                
+                <div class="back">
+                    <div class="bento-grid">
+                        <div class="bento-card span-6">
+                            <span class="subtitle">Crisp & Gold</span>
+                            <h2 class="giant-title">CRISPY COOKIES</h2>
+                        </div>
+                        <div class="bento-card span-3 row-3">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p5_cookies_split_left" alt="Cookies Left">
+                            </div>
+                        </div>
+                        <div class="bento-card span-3 row-3">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p9_gallery_sub1" alt="Milk Right">
+                            </div>
+                        </div>
+                        <div class="bento-card span-4 row-2">
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="visual_pb_film" alt="Bánh quy HiAn Cake">
+                            </div>
+                        </div>
+                        <div class="bento-card span-2 row-2">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p5_cookies_bottom" alt="Cookies detail">
+                            </div>
+                        </div>
+                    </div>
+                    <span class="page-num">10</span>
+                </div>
+            </div>
+
+            <!-- Paper 6: QQ Pudding & Cream Cake type -->
+            <div class="paper" id="p6">
+                <div class="front">
+                    <div class="bento-grid">
+                        <div class="bento-card span-4">
+                            <span class="subtitle">QQ Taste</span>
+                            <h2 class="title-gold">QQ PUDDING</h2>
+                        </div>
+                        <div class="bento-card span-2 row-2">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p6_pudding_sub" alt="Pudding sub">
+                            </div>
+                        </div>
+                        <div class="bento-card span-4 row-2">
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="visual_pudding_menu" alt="Pudding HiAn Cake">
+                            </div>
+                        </div>
+                        <div class="bento-card span-6 row-2">
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="visual_coffee_menu" alt="Cà phê HiAn Cake">
+                            </div>
+                        </div>
+                    </div>
+                    <span class="page-num">11</span>
+                </div>
+                
+                <div class="back">
+                    <div class="bento-grid">
+                        <div class="bento-card span-3 row-3">
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="visual_cream_menu" alt="Bánh kem HiAn Cake">
+                            </div>
+                        </div>
+                        <div class="bento-card span-3 row-3">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p6_cream_top" alt="Cream Cake top">
+                            </div>
+                        </div>
+                        <div class="bento-card span-3 row-3">
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="p6_mousse_cake" alt="Mousse HiAn Cake">
+                            </div>
+                        </div>
+                        <div class="bento-card span-3 row-3">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p6_pudding_alt" alt="HiAn Cake">
+                            </div>
+                        </div>
+                    </div>
+                    <span class="page-num">12</span>
+                </div>
+            </div>
+
+            <!-- Paper 7: Soft Bread & Wedding Album -->
+            <div class="paper" id="p7">
+                <div class="front">
+                    <div class="bento-grid">
+                       
+                        <div class="bento-card span-6 row-2">
+                            <div style="display:flex; gap:6px; height:100%; width:100%;">
+                                <div style="flex:1;"><img data-img-key="p9_gallery_sub1_dup2" alt="Bread 1" style="height:100%;"></div>
+                                <div style="flex:1;"><img data-img-key="p9_gallery_sub2" alt="Bread 2" style="height:100%;"></div>
+                                <div style="flex:1;"><img data-img-key="p9_gallery_sub3" alt="Bread 3" style="height:100%;"></div>
+                            </div>
+                        </div>
+                        <div class="bento-card span-3 row-3">
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="p8_love_bottom" alt="Bánh mì HiAn Cake">
+                            </div>
+                        </div>
+                        <div class="bento-card span-3 row-3">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p7_bread_detail" alt="Bread detail">
+                            </div>
+                        </div>
+                        <div class="bento-card span-6 row-2">
+                            <div style="display:flex; gap:6px; height:100%; width:100%;">
+                                <div style="flex:1;"><img data-img-key="p7_bread_sub1" alt="Bread 1" style="height:100%;"></div>
+                                <div style="flex:1;"><img data-img-key="p7_bread_sub2" alt="Bread 2" style="height:100%;"></div>
+                                <div style="flex:1;"><img data-img-key="p7_bread_sub3" alt="Bread 3" style="height:100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="page-num">13</span>
+                </div>
+                
+                <div class="back">
+                    <div class="bento-grid">
+                        <div class="bento-card span-4 row-3">
+                            <div class="bento-img-wrap">
+                                <img data-img-key="p7_wedding_main" alt="Wedding Cake Main">
+                            </div>
+                        </div>
+                        <div class="bento-card span-2 row-2">
+                            <span class="subtitle">Ceremony</span>
+                            <h2 class="title-gold" style="font-size:13px; line-height:1.3;">CLASSIC WEDDING ALBUM</h2>
+                        </div>
+                        <div class="bento-card span-2">
+                            <div class="bento-quote" style="font-size:9.5px; border-left-color:var(--accent-pink);">♥ Love is sweet.</div>
+                        </div>
+                        <div class="bento-card span-6">
+                            <div style="display:flex; gap:6px; height:100%; width:100%;">
+                                <div style="flex:1;"><img data-img-key="pb_polar8" alt="Wedding Cake sub 1" style="height:100%;"></div>
+                                <div style="flex:1;"><img data-img-key="p7_wedding_sub2" alt="Wedding Cake sub 2" style="height:100%;"></div>
+                                <div style="flex:1; display:flex; align-items:center; justify-content:center; border: 1px dashed rgba(229,192,123,0.3); border-radius:6px;"><span class="title-gold" style="font-size:12px;">MEET ♥</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="page-num">14</span>
+                </div>
+            </div>
+
+           
+
+            <!-- Paper 17: Film Reel & Instagram Grid -->
+            <div class="paper" id="p17">
+                <div class="front">
+                    <div class="bento-grid">
+                        <div class="bento-card span-6">
+                            <h2 class="title-red text-center">BAKER'S CINEMA</h2>
+                        </div>
+                        <div class="bento-card span-4 row-4 pb-filmstrip-page pb-effect-popup">
+                            <div class="pb-filmstrip">
+                                <div class="pb-film-holes left"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                                <div class="pb-film-frames">
+                                    <img data-img-key="pb_film11" alt="Film 11">
+                                    <img data-img-key="pb_film12" alt="Film 12">
+                                    <img data-img-key="pb_film13" alt="Film 13">
+                                </div>
+                                <div class="pb-film-holes right"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                            </div>
+                        </div>
+                        <div class="bento-card span-2 row-2">
+                            <div class="bento-quote" style="font-size:9.5px;">Artisan rolls.</div>
+                        </div>
+                        <div class="bento-card span-2 row-2">
+                            <span class="subtitle">Cinema</span>
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="visual_pb_film_b" alt="HiAn Cake">
+                            </div>
+                        </div>
+                    </div>
+                    <span class="page-num">15</span>
+                </div>
+                
+                <div class="back">
+                    <div class="bento-grid">
+                        <div class="bento-card span-6">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <h2 class="title-red"><i class="fab fa-instagram"></i> @SWEETCAKE_GALLERY</h2>
+                                <span class="subtitle" style="font-size:9px;">Desserts Gallery</span>
+                            </div>
+                        </div>
+                        <div class="bento-card span-6 row-4 pb-insta-page pb-effect-reveal">
+                            <div class="pb-insta-grid">
+                                <div class="pb-insta-item"><img data-img-key="pb_insta13" alt="Insta 13"><div class="pb-insta-overlay"><i class="fas fa-heart"></i> 1.9K</div></div>
+                                <div class="pb-insta-item"><img data-img-key="pb_insta14" alt="Insta 14"><div class="pb-insta-overlay"><i class="fas fa-heart"></i> 850</div></div>
+                                <div class="pb-insta-item"><img data-img-key="pb_insta15" alt="Insta 15"><div class="pb-insta-overlay"><i class="fas fa-heart"></i> 2.1K</div></div>
+                                <div class="pb-insta-item"><img data-img-key="pb_insta16" alt="Insta 16"><div class="pb-insta-overlay"><i class="fas fa-heart"></i> 1.3K</div></div>
+                            </div>
+                        </div>
+                        <div class="bento-card span-6">
+                            <div class="bento-quote">Daily curation of premium cakes.</div>
+                        </div>
+                    </div>
+                    <span class="page-num">16</span>
+                </div>
+            </div>
+
+            <!-- Paper 18: Photobooth scrapbook (trang 25) -->
+            <div class="paper" id="p18">
+                <div class="front">
+                    <div class="bento-grid bento-grid--photobooth-scrap">
+                        <div class="bento-card span-6 pb-photobooth-title-card">
+                            <h2 class="title-gold">PHOTOBOOTH</h2>
+                        </div>
+                        <div class="bento-card span-6 pb-photobooth-collage-zone pb-effect-blur-in">
+                            <div class="pb-photobooth-panel">
+                                <div class="pb-photobooth-polaroids">
+                                    <div class="pb-polaroid pb-polaroid--booth" style="--rot:-5deg"><div class="pb-tape tape-pink"></div><div class="pb-polaroid-photo"><img data-img-key="pb_strip1" alt=""></div><span class="pb-polaroid-caption">Kem bơ mịn</span></div>
+                                    <div class="pb-polaroid pb-polaroid--booth" style="--rot:4deg"><div class="pb-tape"></div><div class="pb-polaroid-photo"><img data-img-key="pb_strip2" alt=""></div><span class="pb-polaroid-caption">So sweet ♥</span></div>
+                                    <div class="pb-polaroid pb-polaroid--booth" style="--rot:-3deg"><div class="pb-tape tape-gold"></div><div class="pb-polaroid-photo"><img data-img-key="pb_strip3" alt=""></div><span class="pb-polaroid-caption">Ngọt từ lò</span></div>
+                                    <div class="pb-polaroid pb-polaroid--booth" style="--rot:3deg"><div class="pb-tape tape-pink"></div><div class="pb-polaroid-photo"><img data-img-key="pb_strip4" alt=""></div><span class="pb-polaroid-caption">Yummy! 🎂</span></div>
+                                    <div class="pb-polaroid pb-polaroid--booth" style="--rot:-4deg"><div class="pb-tape"></div><div class="pb-polaroid-photo"><img data-img-key="pb_strip5" alt=""></div><span class="pb-polaroid-caption">Best day!</span></div>
+                                    <div class="pb-polaroid pb-polaroid--booth" style="--rot:2deg"><div class="pb-tape tape-gold"></div><div class="pb-polaroid-photo"><img data-img-key="pb_strip6" alt=""></div><span class="pb-polaroid-caption">Fluffy crust</span></div>
+                                    <div class="pb-polaroid pb-polaroid--booth" style="--rot:-2deg"><div class="pb-tape tape-pink"></div><div class="pb-polaroid-photo"><img data-img-key="pb_strip7" alt=""></div><span class="pb-polaroid-caption">HiAn Cake</span></div>
+                                    <div class="pb-polaroid pb-polaroid--booth" style="--rot:4deg"><div class="pb-tape"></div><div class="pb-polaroid-photo"><img data-img-key="pb_strip8" alt=""></div><span class="pb-polaroid-caption">Oven love</span></div>
+                                    <div class="pb-polaroid pb-polaroid--booth" style="--rot:-3deg"><div class="pb-tape tape-gold"></div><div class="pb-polaroid-photo"><img data-img-key="pb_strip9" alt=""></div><span class="pb-polaroid-caption">Morning bake</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bento-card span-6 pb-photobooth-footer">
+                            <span class="luxury-badge">Handmade with Love</span>
+                        </div>
+                    </div>
+                    <span class="page-num">17</span>
+                </div>
+                
+                <div class="back">
+                  
+                    <div class="bento-grid">
+                        <div class="bento-card span-3 row-3">
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="pb_polar13" alt="Bánh kem HiAn Cake">
+                            </div>
+                        </div>
+                        <div class="bento-card span-3 row-3">
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="p1_about_5" alt="Bánh kem HiAn Cake">
+                            </div>
+                        </div>
+                        <div class="bento-card span-3 row-3">
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="pb_film17" alt="Bánh kem HiAn Cake">
+                            </div>
+                        </div>
+                        <div class="bento-card span-3 row-3">
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="pb_mosaic25" alt="Bánh kem HiAn Cake">
+                            </div>
+                        </div>
+                    </div>
+                    <span class="page-num">18</span>
+                </div>
+            </div>
+
+            <!-- Paper 19: Strip Photobooth & Mosaic Collage -->
+            <div class="paper" id="p19">
+                <div class="front">
+                    <div class="bento-grid">
+                        <div class="bento-card span-6">
+                            <h2 class="title-red text-center">SWEET ARTISTRY</h2>
+                        </div>
+                        <div class="bento-card span-4 row-4 pb-photo-strip-page pb-effect-reveal">
+                            <div class="pb-strip">
+                                <div class="pb-strip-frame"><img data-img-key="pb_strip13" alt="Strip 13"></div>
+                                <div class="pb-strip-frame"><img data-img-key="pb_strip14" alt="Strip 14"></div>
+                            </div>
+                        </div>
+                        <div class="bento-card span-2 row-2">
+                            <span class="luxury-badge">Art</span>
+                            <div class="bento-img-wrap bento-img-wrap--fill" style="margin-top:4px;">
+                                <img data-img-key="visual_pb_cream" alt="HiAn Cake cream">
+                            </div>
+                        </div>
+                        <div class="bento-card span-2 row-2">
+                            <div class="bento-quote" style="font-size:10px;">Icing art form.</div>
+                        </div>
+                    </div>
+                    <span class="page-num">19</span>
+                </div>
+                
+                <div class="back">
+                    <div class="bento-grid">
+                        <div class="bento-card span-6">
+                            <h2 class="title-brown text-center">FLAVOR MIX</h2>
+                        </div>
+                        <div class="bento-card span-6 row-4 pb-mosaic-page pb-effect-popup">
+                            <div class="pb-mosaic">
+                                <div class="pb-mosaic-item pb-m-tall"><img data-img-key="pb_mosaic16" alt="Mosaic 16"></div>
+                                <div class="pb-mosaic-item pb-m-small"><img data-img-key="pb_mosaic17" alt="Mosaic 17"></div>
+                                <div class="pb-mosaic-item pb-m-square"><img data-img-key="pb_mosaic20" alt="Mosaic 20"></div>
+                            </div>
+                        </div>
+                        <div class="bento-card span-6">
+                            <span class="luxury-badge" style="align-self:center;">Premium Assorted Sets</span>
+                        </div>
+                    </div>
+                    <span class="page-num">20</span>
+                </div>
+            </div>
+
+            <!-- Paper 20: Film Reel & Instagram Grid -->
+            <div class="paper" id="p20">
+                <div class="front">
+                    <div class="bento-grid">
+                        <div class="bento-card span-6">
+                            <h2 class="title-red text-center">SWEET FILM ROLL</h2>
+                        </div>
+                        <div class="bento-card span-4 row-4 pb-filmstrip-page pb-effect-popup">
+                            <div class="pb-filmstrip">
+                                <div class="pb-film-holes left"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                                <div class="pb-film-frames">
+                                    <img data-img-key="pb_film16" alt="Film 16">
+                                    <img data-img-key="pb_film17" alt="Film 17">
+                                    <img data-img-key="pb_film18" alt="Film 18">
+                                </div>
+                                <div class="pb-film-holes right"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                            </div>
+                        </div>
+                        <div class="bento-card span-2 row-2">
+                            <div class="bento-quote" style="font-size:9.5px;">Bake details.</div>
+                        </div>
+                        <div class="bento-card span-2 row-2">
+                            <span class="subtitle">Cinema</span>
+                            <div class="bento-img-wrap bento-img-wrap--fill">
+                                <img data-img-key="visual_pb_film_c" alt="HiAn Cake">
+                            </div>
+                        </div>
+                    </div>
+                    <span class="page-num">21</span>
+                </div>
+                
+                <div class="back">
+                    <div class="bento-grid">
+                        <div class="bento-card span-6">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <h2 class="title-red"><i class="fab fa-instagram"></i> @SWEETCAKE_LOVERS</h2>
+                                <span class="subtitle" style="font-size:9px;">Daily Sweet Posts</span>
+                            </div>
+                        </div>
+                        <div class="bento-card span-6 row-4 pb-insta-page pb-effect-reveal">
+                            <div class="pb-insta-grid">
+                                <div class="pb-insta-item"><img data-img-key="pb_insta19" alt="Insta 19"><div class="pb-insta-overlay"><i class="fas fa-heart"></i> 1.8K</div></div>
+                                <div class="pb-insta-item"><img data-img-key="pb_insta20" alt="Insta 20"><div class="pb-insta-overlay"><i class="fas fa-heart"></i> 1.1K</div></div>
+                                <div class="pb-insta-item"><img data-img-key="pb_insta21" alt="Insta 21"><div class="pb-insta-overlay"><i class="fas fa-heart"></i> 2.4K</div></div>
+                                <div class="pb-insta-item"><img data-img-key="pb_insta22" alt="Insta 22"><div class="pb-insta-overlay"><i class="fas fa-heart"></i> 1.6K</div></div>
+                            </div>
+                        </div>
+                        <div class="bento-card span-6">
+                            <div class="bento-quote">Everyday is a sweet cake day ♥</div>
+                        </div>
+                    </div>
+                    <span class="page-num">22</span>
+                </div>
+            </div>
+
+        
+
+            <!-- Paper 22: Mosaic Collage & Back Cover -->
+            <div class="paper" id="p22">
+                <div class="front">
+                    <div class="bento-grid">
+                        <div class="bento-card span-6">
+                            <h2 class="title-brown text-center">SWEET FINALE</h2>
+                        </div>
+                        <div class="bento-card span-6 row-4 pb-mosaic-page pb-effect-popup">
+                            <div class="pb-mosaic">
+                                <div class="pb-mosaic-item pb-m-tall"><img data-img-key="pb_mosaic21" alt="Mosaic 21"></div>
+                                <div class="pb-mosaic-item pb-m-small"><img data-img-key="pb_mosaic22" alt="Mosaic 22"></div>
+                                <div class="pb-mosaic-item pb-m-square"><img data-img-key="pb_mosaic25" alt="Mosaic 25"></div>
+                            </div>
+                        </div>
+                        <div class="bento-card span-6">
+                            <span class="luxury-badge" style="align-self:center;">Final Pastry Collage</span>
+                        </div>
+                    </div>
+                    <span class="page-num">23</span>
+                </div>
+                
+                <div class="back cover-layout bg-red">
+                    <div class="white-box">
+                        <div class="stack-img-container">
+                            <img data-img-key="p4_party_top" alt="Sparkler Cake Back">
+                            <img data-img-key="p4_party_bottom" alt="Candle Cake Back">
+                        </div>
+                        <div class="qr-section">
+                            <i class="fas fa-qrcode qr-icon"></i>
+                            <div class="info-text">
+                                <p style="color:var(--text-gold); font-weight:600; font-size:10px;">HiAn Cake</p>
+                                <p>Ảnh tải từ thư mục anh/ (cấu hình trong script.js).</p>
+                                <p>Twitter: twitter.com/SweetCake</p>
+                                <p>Facebook: facebook.com/SweetCake</p>
+                                <p>Email: support@sweetcake.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="page-num" style="color:var(--text-gold); left: 28px;">25</span>
+                </div>
+            </div>
+
+                </div>
+            </div>
+            <button id="next-btn" class="nav-btn nav-btn--next" type="button" aria-label="Trang sau"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div id="image-lightbox" class="image-lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Xem ảnh phóng to">
+        <button type="button" class="image-lightbox__close" aria-label="Đóng"><i class="fas fa-times" aria-hidden="true"></i></button>
+        <div class="image-lightbox__backdrop" aria-hidden="true"></div>
+        <div class="image-lightbox__stage">
+            <img class="image-lightbox__img" alt="">
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

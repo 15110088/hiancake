@@ -1,0 +1,16 @@
+# OS & editor
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# IDE / tools
+.cursor/
+.understand-anything/
+.vscode/
+
+# Logs & env
+*.log
+.env
+.env.*

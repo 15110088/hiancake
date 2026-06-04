@@ -1,0 +1,1794 @@
+/* ========================================================
+   1. RESET & variables — Hoa Đào Mùa Xuân
+======================================================== */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+html {
+    width: 100%;
+}
+
+:root {
+    /* Bảng 4: Hoa Đào Mùa Xuân */
+    --canvas: #FFFFFF;
+    --rose: #F497A9;
+    --rose-rgb: 244, 151, 169;
+    --beige-pink: #FADAE0;
+    --espresso: #593C42;
+    --espresso-rgb: 89, 60, 66;
+
+    --bg-app: var(--canvas);
+    --paper-bg-front: linear-gradient(145deg, #FFFFFF 0%, #FFF8FA 100%);
+    --paper-bg-back: linear-gradient(215deg, #FFF8FA 0%, #FADAE0 100%);
+
+    /* Aliases (giữ tên biến cũ trong CSS/HTML) */
+    --gold-solid: var(--rose);
+    --gold-light: #F7B0BE;
+    --gold-metallic: linear-gradient(135deg, #FADAE0 0%, #F497A9 50%, #E8869A 100%);
+    --primary-red: #E07A92;
+    --primary-red-metallic: linear-gradient(135deg, #F497A9 0%, #D86B85 100%);
+    --accent-pink: #FADAE0;
+
+    --bg-glass: rgba(250, 218, 224, 0.55);
+    --border-glass: rgba(var(--rose-rgb), 0.35);
+    --border-glass-hover: rgba(var(--rose-rgb), 0.55);
+
+    --text-white: var(--espresso);
+    --text-muted: #8A6B72;
+    --text-gold: var(--rose);
+
+    --shadow-soft: 0 10px 30px rgba(var(--rose-rgb), 0.14);
+    --shadow-book: 0 30px 70px rgba(var(--rose-rgb), 0.2), 0 10px 25px rgba(var(--espresso-rgb), 0.06);
+    --shadow-inset-page: inset 16px 0 32px -12px rgba(var(--espresso-rgb), 0.05);
+
+    --nav-btn-size: 48px;
+    --nav-gap: clamp(12px, 2.5vw, 24px);
+    --nav-outside-chrome: calc(var(--nav-btn-size) * 2 + var(--nav-gap) * 2);
+
+    --font-heading: 'Playfair Display', Georgia, serif;
+    --font-body: 'Quicksand', sans-serif;
+}
+
+body {
+    background: var(--canvas);
+    background-image: 
+        radial-gradient(rgba(var(--rose-rgb), 0.08) 1px, transparent 1px);
+    background-size: 28px 28px;
+    margin: 0;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: var(--font-body);
+    font-weight: 400;
+    color: var(--espresso);
+    overflow: hidden;
+}
+
+/* Base Image — bento dùng contain (trọn hình); polaroid/film giữ cover riêng */
+img { 
+    border-radius: 8px; 
+    display: block; 
+    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                box-shadow 0.5s, 
+                filter 0.5s;
+    filter: brightness(0.98) contrast(1.02) saturate(0.95);
+}
+img:not(.cover-brand-bg):not(.cover-brand-logo) {
+    border: 1px solid rgba(var(--rose-rgb), 0.22);
+    box-shadow: var(--shadow-soft);
+}
+
+.bento-card:hover .bento-img-wrap img {
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(var(--rose-rgb), 0.18);
+}
+
+/* ========================================================
+   2. 3D BOOK & NAVIGATION (nút ngoài flipbook)
+======================================================== */
+.book-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 8px;
+    box-sizing: border-box;
+    overflow: visible;
+}
+
+/* Một khối căn giữa: [nút trái] [sách] [nút phải] */
+.flipbook-shell {
+    display: grid;
+    grid-template-columns: 1fr var(--book-stage-width, var(--book-width, 480px)) 1fr;
+    column-gap: var(--nav-gap);
+    align-items: center;
+    justify-items: center;
+    perspective: 2500px;
+    width: min(100%, calc(var(--book-stage-width, 480px) + var(--nav-outside-chrome)));
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.book-stage {
+    grid-column: 2;
+    position: relative;
+    width: var(--book-stage-width, var(--book-width, 480px));
+    height: var(--book-height, 640px);
+    justify-self: center;
+    overflow: visible;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+/* Spread 2 trang: căn spine vào giữa khung stage */
+.book-stage:has(.book.open),
+.book-stage:has(.book.is-closing) {
+    justify-content: flex-start;
+}
+
+.nav-btn {
+    background: var(--beige-pink);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-glass);
+    width: var(--nav-btn-size);
+    height: var(--nav-btn-size);
+    border-radius: 50%;
+    font-size: 17px;
+    color: var(--espresso);
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+    transition: background 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                color 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                border-color 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                box-shadow 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                transform 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                opacity 0.3s;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    flex-shrink: 0;
+    pointer-events: auto;
+}
+.nav-btn--prev { grid-column: 1; justify-self: end; }
+.nav-btn--next { grid-column: 3; justify-self: start; }
+.nav-btn:hover:not(:disabled) { 
+    transform: scale(1.08); 
+    background: var(--rose); 
+    color: #fff; 
+    box-shadow: 0 12px 30px rgba(var(--rose-rgb), 0.3); 
+    border-color: var(--rose);
+}
+.nav-btn:disabled { 
+    opacity: 0.25; 
+    cursor: not-allowed; 
+    transform: none; 
+    box-shadow: none;
+}
+
+.book {
+    width: var(--book-width, 480px);
+    height: var(--book-height, 640px);
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: var(--shadow-book);
+    border-radius: 12px;
+    touch-action: pan-y;
+    cursor: grab;
+    user-select: none;
+}
+.book.is-dragging { cursor: grabbing; }
+
+/* Mở 2 trang: đẩy spine (mép trái .book) vào giữa stage 2× — 50% chỉ đúng khi stage = 1 trang */
+.book.open,
+.book.is-closing {
+    transform: translateX(calc(var(--book-stage-width) - var(--book-width)));
+}
+
+/* Mobile: luôn 1 mặt, căn giữa, không spread */
+.book.mobile-view.open,
+.book.mobile-view.is-closing {
+    transform: translateX(0) !important;
+}
+.book.mobile-view .paper:not(.mobile-visible) {
+    visibility: hidden !important;
+    pointer-events: none;
+}
+.book.mobile-view .paper.mobile-visible {
+    visibility: visible !important;
+    z-index: 999 !important;
+}
+/* Mobile: 1 mặt phẳng, tắt 3D để Safari không ẩn mặt sau */
+.book.mobile-view .paper.mobile-visible {
+    transform: rotateY(0deg) !important;
+    transform-style: flat;
+}
+.book.mobile-view .paper.mobile-visible:not(.mobile-show-back) .back {
+    display: none !important;
+}
+.book.mobile-view .paper.mobile-visible.mobile-show-back .front {
+    display: none !important;
+}
+.book.mobile-view .paper.mobile-visible .front,
+.book.mobile-view .paper.mobile-visible .back {
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
+}
+.book.mobile-view .paper.mobile-visible:not(.mobile-show-back) .front,
+.book.mobile-view .paper.mobile-visible.mobile-show-back .back {
+    transform: none !important;
+    -webkit-transform: none !important;
+}
+.book.mobile-view .paper.mobile-visible.mobile-show-back .back {
+    border-radius: 0 12px 12px 0;
+    border-left: 2px solid rgba(var(--rose-rgb), 0.35);
+    border-right: none;
+    box-shadow: var(--shadow-inset-page);
+}
+/* Mobile: hiệu ứng đan xen khi active (không dùng !important để giữ transition-delay) */
+.book.mobile-view .paper.mobile-visible.active-left .back .bento-card,
+.book.mobile-view .paper.mobile-visible.active-right .front .bento-card {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+.book.mobile-view .paper.mobile-visible.active-left .back .bento-card:nth-child(1),
+.book.mobile-view .paper.mobile-visible.active-right .front .bento-card:nth-child(1) { transition-delay: 0.05s; }
+.book.mobile-view .paper.mobile-visible.active-left .back .bento-card:nth-child(2),
+.book.mobile-view .paper.mobile-visible.active-right .front .bento-card:nth-child(2) { transition-delay: 0.15s; }
+.book.mobile-view .paper.mobile-visible.active-left .back .bento-card:nth-child(3),
+.book.mobile-view .paper.mobile-visible.active-right .front .bento-card:nth-child(3) { transition-delay: 0.25s; }
+.book.mobile-view .paper.mobile-visible.active-left .back .bento-card:nth-child(4),
+.book.mobile-view .paper.mobile-visible.active-right .front .bento-card:nth-child(4) { transition-delay: 0.35s; }
+.book.mobile-view .paper.mobile-visible.active-left .back .bento-card:nth-child(5),
+.book.mobile-view .paper.mobile-visible.active-right .front .bento-card:nth-child(5) { transition-delay: 0.45s; }
+.book.mobile-view .paper.mobile-visible.active-left .back .bento-card:nth-child(6),
+.book.mobile-view .paper.mobile-visible.active-right .front .bento-card:nth-child(6) { transition-delay: 0.55s; }
+/* Trang không active: reset để lần sau chạy lại animation */
+.book.mobile-view .paper.mobile-visible:not(.active-left):not(.active-right) .bento-card {
+    opacity: 0;
+    transform: translateY(15px) scale(0.97);
+    transition-delay: 0s;
+}
+
+/* Đóng sách — bìa trước & bìa sau giống nhau: 1 trang, không lệch spread */
+.book.closed-front,
+.book.closed-back {
+    transform: translateX(0);
+}
+
+.book.closed-back .paper:not(:last-child) {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* Bìa sau: hiển thị như bìa trước (rotate 0, chỉ mặt back) */
+.book.closed-back .paper:last-child {
+    z-index: 999 !important;
+    transform: rotateY(0deg) !important;
+}
+.book.closed-back .paper:last-child .front {
+    visibility: hidden;
+    pointer-events: none;
+}
+.book.closed-back .paper:last-child .back.cover-layout {
+    transform: rotateY(0deg) !important;
+    -webkit-transform: rotateY(0deg) !important;
+    border-radius: 0 12px 12px 0;
+    border-left: 2px solid rgba(var(--rose-rgb), 0.35);
+    border-right: none;
+    box-shadow: var(--shadow-inset-page);
+}
+.book.closed-back .paper:last-child .back.cover-layout::after {
+    border-radius: 8px;
+}
+
+/* Bìa trước đóng — đảm bảo chỉ thấy 1 trang */
+.book.closed-front .paper:not(:first-child) {
+    visibility: hidden;
+    pointer-events: none;
+}
+.book.closed-front .paper:first-child {
+    z-index: 999 !important;
+    transform: rotateY(0deg) !important;
+}
+
+.paper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0; left: 0;
+    transform-style: preserve-3d;
+    transform-origin: left center;
+    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), z-index 0.8s;
+}
+.paper.dragging {
+    transition: none;
+}
+
+.paper.flipped { transform: rotateY(-180deg); }
+
+.front, .back {
+    position: absolute !important;
+    width: 100%; 
+    height: 100%;
+    top: 0 !important;
+    left: 0 !important;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+    padding: 30px 28px;
+    display: flex;
+    flex-direction: column;
+}
+
+.front {
+    background: var(--paper-bg-front);
+    border-left: 2px solid rgba(var(--rose-rgb), 0.35);
+    box-shadow: var(--shadow-inset-page);
+    border-radius: 0 12px 12px 0;
+}
+.back { 
+    transform: rotateY(180deg); 
+    -webkit-transform: rotateY(180deg); 
+    background: var(--paper-bg-back);
+    border-right: 2px solid rgba(var(--rose-rgb), 0.35);
+    box-shadow: inset -16px 0 32px -12px rgba(var(--espresso-rgb), 0.06);
+    border-radius: 12px 0 0 12px;
+}
+
+/* Page corner accents */
+.front::after, .back::after {
+    content: '';
+    position: absolute;
+    top: 10px; left: 10px; right: 10px; bottom: 10px;
+    border: 1px solid rgba(var(--rose-rgb), 0.15);
+    pointer-events: none;
+    border-radius: 8px;
+    z-index: 2;
+}
+
+/* Page Numbers */
+.page-num { 
+    position: absolute; 
+    bottom: 18px; 
+    font-size: 11px; 
+    color: var(--text-gold); 
+    font-family: var(--font-heading);
+    font-weight: bold; 
+    letter-spacing: 2px; 
+    opacity: 0.6;
+}
+.front .page-num { right: 28px; }
+.back .page-num { left: 28px; }
+
+/* ========================================================
+   3. BENTO GRID UI & DASHBOARD COMPONENTS
+======================================================== */
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: minmax(58px, auto);
+    gap: 10px;
+    align-content: start;
+    flex: 1;
+    min-height: 0;
+    margin-top: 8px;
+    margin-bottom: 5px;
+    position: relative;
+    z-index: 5;
+}
+.bento-grid:has(.bento-card--photo) {
+    grid-auto-rows: auto;
+}
+
+/* Lưới chỉ ảnh dọc — 3 cột (span-2), không khung ngang */
+.bento-grid--portrait-mosaic {
+    grid-auto-rows: auto;
+    gap: 8px;
+    align-content: stretch;
+}
+.bento-grid--portrait-mosaic .bento-card--heading {
+    padding: 10px 12px;
+    min-height: 0;
+}
+.bento-grid--portrait-mosaic .bento-card--photo {
+    padding: 6px;
+    min-height: 0;
+}
+.bento-grid--portrait-mosaic .bento-card--photo > .bento-img-wrap {
+    flex: 1 1 auto;
+    width: 100%;
+    max-height: none;
+    aspect-ratio: 3 / 4;
+}
+.bento-grid--portrait-mosaic .bento-img-wrap.bento-frame--landscape,
+.bento-grid--portrait-mosaic .bento-img-wrap.bento-frame--landscape-wide {
+    aspect-ratio: 3 / 4;
+}
+.bento-grid--portrait-mosaic .bento-slogan {
+    min-height: 28px;
+    padding: 6px 8px;
+    font-size: 10px;
+    margin-top: 6px;
+}
+.bento-grid--portrait-mosaic .bento-card--photo > .bento-slogan {
+    margin-top: 6px;
+}
+
+/* Bento Card Base (Glassmorphism & Component-Based) */
+.bento-card {
+    background: var(--bg-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-glass);
+    border-radius: 14px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Glass Refraction Shine on Hover */
+.bento-card::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -60%;
+    width: 30%; height: 200%;
+    background: linear-gradient(90deg, transparent, rgba(var(--rose-rgb), 0.12), transparent);
+    transform: skewX(-30deg);
+    transition: none;
+}
+.bento-card:hover::after {
+    animation: shineFlow 1.2s ease forwards;
+}
+@keyframes shineFlow {
+    0% { left: -60%; }
+    100% { left: 160%; }
+}
+
+/* Bento Hover Micro-interaction */
+.bento-card:hover {
+    transform: translateY(-4px) scale(1.015);
+    background: rgba(217, 195, 190, 0.55);
+    border-color: var(--border-glass-hover);
+    box-shadow: 
+        var(--shadow-soft),
+        inset 0 1px 0 rgba(246, 243, 238, 0.8);
+    z-index: 10;
+}
+
+/* Bento grid sizing helpers */
+.span-6 { grid-column: span 6; }
+.span-5 { grid-column: span 5; }
+.span-4 { grid-column: span 4; }
+.span-3 { grid-column: span 3; }
+.span-2 { grid-column: span 2; }
+.span-1 { grid-column: span 1; }
+
+.row-2 { grid-row: span 2; }
+.row-3 { grid-row: span 3; }
+.row-4 { grid-row: span 4; }
+
+.flex-center { display: flex; align-items: center; justify-content: center; text-align: center; }
+.align-start { justify-content: flex-start; }
+
+/* Khung ảnh chữ nhật — tỷ lệ cố định, contain trọn hình, ít khoảng trống */
+.bento-img-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    flex: 0 0 auto;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(var(--rose-rgb), 0.18);
+    padding: 3px;
+    box-sizing: border-box;
+    aspect-ratio: 3 / 4;
+}
+
+#book img[data-img-key] {
+    cursor: zoom-in;
+}
+
+.bento-img-wrap img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 6px;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Tỷ lệ khung chữ nhật — khớp ảnh (JS gán class sau khi load) */
+.bento-img-wrap.bento-frame--portrait { aspect-ratio: 3 / 4; }
+.bento-img-wrap.bento-frame--portrait-tall { aspect-ratio: 4 / 5; }
+.bento-img-wrap.bento-frame--landscape { aspect-ratio: 4 / 3; }
+.bento-img-wrap.bento-frame--landscape-wide { aspect-ratio: 3 / 2; }
+
+/* Ô ảnh + slogan — khung không kéo giãn full chiều cao ô */
+.bento-card--photo {
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 8px;
+    gap: 6px;
+    min-height: 0;
+}
+.bento-card--photo > .bento-slogan {
+    margin-top: auto;
+}
+.bento-card--photo > .bento-img-wrap {
+    flex: 0 0 auto;
+    width: 100%;
+    max-height: calc(100% - 44px);
+}
+.bento-card--photo.bento-card--has-title {
+    justify-content: flex-start;
+}
+.bento-card--photo.bento-card--has-title > .bento-img-wrap {
+    margin-top: 4px;
+}
+.bento-slogan {
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 32px;
+    margin: 0;
+    padding: 8px 10px;
+    font-size: 10.5px;
+    line-height: 1.5;
+    font-style: italic;
+    font-family: var(--font-body);
+    color: var(--espresso);
+    text-align: center;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px dashed rgba(var(--rose-rgb), 0.35);
+    border-radius: 8px;
+    outline: none;
+}
+.bento-slogan:empty::before {
+    content: attr(data-placeholder);
+    color: rgba(var(--espresso-rgb), 0.38);
+}
+.bento-slogan:focus {
+    border-color: var(--rose);
+    background: #fff;
+}
+
+/* ========================================================
+   4. TYPOGRAPHY & BRANDING
+======================================================== */
+/* Oversized Typography for impactful first impression */
+.giant-title {
+    font-family: var(--font-heading);
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+    background: var(--gold-metallic);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.title-gold {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    color: var(--text-gold);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.title-red {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    color: var(--accent-pink);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.subtitle {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    font-weight: 400;
+}
+
+.body-text {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-muted);
+}
+.body-text-white {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-white);
+}
+
+.price-tag {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--text-gold);
+    display: inline-block;
+    padding: 3px 10px;
+    background: rgba(var(--rose-rgb), 0.1);
+    border: 1px solid rgba(var(--rose-rgb), 0.3);
+    border-radius: 20px;
+    margin-top: 6px;
+    width: fit-content;
+}
+
+/* Elegant Quote Block inside Bento */
+.bento-quote {
+    border-left: 2px solid var(--gold-solid);
+    padding-left: 12px;
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-size: 11.5px;
+    color: var(--text-gold);
+    line-height: 1.5;
+}
+
+/* ========================================================
+   5. COMPONENT ELEMENTS (MENU ITEMS, TOC, AND LISTS)
+======================================================== */
+.toc-list-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* High-tech menu rows within Bento Box */
+.menu-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px;
+    border-bottom: 1px solid rgba(var(--rose-rgb), 0.2);
+    transition: all 0.3s;
+    cursor: pointer;
+}
+.menu-item-row:hover {
+    background: rgba(var(--rose-rgb), 0.06);
+    padding-left: 8px;
+}
+.menu-item-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-white);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.menu-item-name::before {
+    content: '◆';
+    font-size: 6px;
+    color: var(--text-gold);
+}
+.menu-item-price {
+    font-family: var(--font-heading);
+    font-size: 12px;
+    color: var(--text-gold);
+    font-weight: bold;
+}
+
+/* Badges for highlights */
+.luxury-badge {
+    background: var(--gold-metallic);
+    color: var(--canvas);
+    padding: 3px 8px;
+    font-size: 9px;
+    font-weight: bold;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    width: fit-content;
+    box-shadow: 0 2px 6px rgba(var(--rose-rgb), 0.2);
+}
+
+.luxury-badge-red {
+    background: var(--primary-red-metallic);
+    color: #fff;
+    padding: 3px 8px;
+    font-size: 9px;
+    font-weight: bold;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    width: fit-content;
+}
+
+/* ========================================================
+   6. CUSTOM COMPONENTS & INTERACTIVE AUDIO PLAYER
+======================================================== */
+.mock-player {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+.player-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.player-btn {
+    background: rgba(246, 243, 238, 0.7);
+    border: 1px solid var(--border-glass);
+    color: var(--rose);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.player-btn:hover {
+    background: var(--rose);
+    color: var(--canvas);
+    transform: scale(1.1);
+}
+
+/* Music Visualizer Bars (Stunning Micro-interaction) */
+.music-visualizer {
+    display: flex;
+    align-items: flex-end;
+    gap: 2.5px;
+    height: 20px;
+    margin-left: auto;
+    padding-right: 4px;
+}
+.visualizer-bar {
+    width: 2px;
+    height: 3px;
+    background: var(--text-gold);
+    border-radius: 1px;
+    transition: height 0.3s ease;
+}
+/* Animate only when audio is playing (.playing class on container) */
+.mock-player.playing .visualizer-bar:nth-child(1) { animation: bounceBar 0.8s infinite alternate 0.1s; }
+.mock-player.playing .visualizer-bar:nth-child(2) { animation: bounceBar 0.8s infinite alternate 0.3s; }
+.mock-player.playing .visualizer-bar:nth-child(3) { animation: bounceBar 0.8s infinite alternate 0.2s; }
+.mock-player.playing .visualizer-bar:nth-child(4) { animation: bounceBar 0.8s infinite alternate 0.5s; }
+.mock-player.playing .visualizer-bar:nth-child(5) { animation: bounceBar 0.8s infinite alternate 0.4s; }
+
+@keyframes bounceBar {
+    0% { height: 3px; }
+    100% { height: 18px; }
+}
+
+.player-progress-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.player-progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(var(--rose-rgb), 0.15);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+}
+.progress-bar-line {
+    width: 30%;
+    height: 100%;
+    background: var(--rose);
+    border-radius: 2px;
+}
+.progress-handle {
+    position: absolute;
+    left: 30%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background: var(--canvas);
+    border: 1.5px solid var(--rose);
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(var(--rose-rgb), 0.35);
+}
+.player-time {
+    font-size: 9px;
+    color: var(--text-muted);
+}
+
+/* ========================================================
+   7. PHOTOBOOTH MODIFIED STYLES FOR BENTO GRID
+======================================================== */
+/* Strip layout adapted to Bento card */
+.pb-strip {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    height: 100%;
+    justify-content: space-between;
+    background: var(--beige-pink);
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(var(--rose-rgb), 0.25);
+}
+.pb-strip-frame {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    border-radius: 4px;
+}
+.pb-strip-frame img {
+    height: 100%;
+    width: 100%;
+    border: none;
+    border-radius: 4px;
+}
+
+/* PHOTOBOOTH — kiểu scrapbook: polaroid dọc, băng dính, lấp đầy trang */
+.bento-grid--photobooth-scrap {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    margin-bottom: 0;
+    gap: 10px;
+    align-content: stretch;
+}
+.pb-photobooth-title-card {
+    padding: 14px 18px;
+    min-height: 0;
+    background: rgba(var(--rose-rgb), 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(var(--rose-rgb), 0.22);
+    justify-content: center;
+}
+.pb-photobooth-title-card h2 {
+    margin: 0;
+    text-align: left;
+    font-size: 18px;
+    letter-spacing: 0.06em;
+}
+.pb-photobooth-collage-zone {
+    padding: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+.pb-photobooth-panel {
+    height: 100%;
+    width: 100%;
+    padding: 14px 12px;
+    box-sizing: border-box;
+    background: rgba(var(--rose-rgb), 0.14);
+    border-radius: 14px;
+    border: 1px solid rgba(var(--rose-rgb), 0.25);
+}
+.pb-photobooth-polaroids {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 10px 8px;
+    height: 100%;
+    width: 100%;
+    min-height: 0;
+}
+.pb-polaroid--booth {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 8px 8px 26px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    transform: rotate(var(--rot, 0deg));
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+    align-self: stretch;
+    justify-self: stretch;
+}
+.pb-polaroid--booth .pb-polaroid-photo {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: #fafafa;
+    border-radius: 1px;
+}
+.pb-polaroid--booth .pb-polaroid-photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    object-fit: cover;
+    object-position: center;
+    aspect-ratio: 3 / 4;
+}
+.pb-polaroid--booth .pb-polaroid-caption {
+    bottom: 6px;
+    font-size: 8.5px;
+    line-height: 1.2;
+    padding: 0 4px;
+}
+.pb-polaroid--booth .pb-tape {
+    top: -6px;
+    width: 42px;
+    height: 13px;
+}
+.pb-polaroid--booth:hover {
+    transform: rotate(0deg) scale(1.05) translateY(-3px) !important;
+    z-index: 12;
+}
+.pb-photobooth-footer {
+    padding: 12px;
+    min-height: 0;
+    background: rgba(var(--rose-rgb), 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(var(--rose-rgb), 0.2);
+    justify-content: center;
+    align-items: center;
+}
+.pb-photobooth-footer .luxury-badge {
+    font-size: 10px;
+    padding: 8px 20px;
+}
+
+/* Polaroid item inside Bento */
+.pb-polaroid {
+    background: #fff;
+    padding: 6px 6px 20px 6px;
+    box-shadow: var(--shadow-soft);
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    border-radius: 2px;
+    position: relative;
+}
+.pb-polaroid img {
+    border: none;
+    border-radius: 0;
+    height: calc(100% - 15px);
+    width: 100%;
+    object-fit: cover;
+}
+.pb-polaroid--booth img {
+    height: 100%;
+}
+.pb-polaroid-caption {
+    position: absolute;
+    bottom: 3px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 9px;
+    color: var(--espresso);
+    font-style: italic;
+}
+.pb-polaroid:hover {
+    transform: rotate(0deg) scale(1.08) translateY(-4px) !important;
+    box-shadow: 0 15px 30px rgba(var(--rose-rgb), 0.2);
+    z-index: 10;
+}
+
+/* Film Strip updated inside Bento */
+.pb-filmstrip {
+    display: flex;
+    background: var(--beige-pink);
+    padding: 6px 0;
+    height: 100%;
+    border-radius: 8px;
+    border: 1px solid rgba(var(--rose-rgb), 0.25);
+}
+.pb-film-holes {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    padding: 0 4px;
+}
+.pb-film-holes span {
+    width: 6px;
+    height: 6px;
+    border-radius: 1px;
+    background: rgba(var(--rose-rgb), 0.2);
+}
+.pb-film-frames {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-height: 0;
+}
+.pb-film-frames img {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 2px;
+    border: 1px solid rgba(var(--rose-rgb), 0.2);
+}
+
+/* Mosaic grid updated */
+.pb-mosaic {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    grid-template-rows: 1fr 1fr 0.8fr;
+    gap: 6px;
+    height: 100%;
+    width: 100%;
+}
+.pb-mosaic-item {
+    overflow: hidden;
+    border-radius: 6px;
+}
+.pb-mosaic-item img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+/* Instagram item */
+.pb-insta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 6px;
+    height: 100%;
+}
+.pb-insta-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.pb-insta-item img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    border: none;
+    border-radius: 6px;
+}
+.pb-insta-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(var(--espresso-rgb), 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--canvas);
+    font-size: 10px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.pb-insta-overlay i { color: var(--accent-pink); }
+.pb-insta-item:hover .pb-insta-overlay { opacity: 1; }
+.pb-insta-item:hover img { transform: scale(1.08); }
+
+/* Scrapbook style inside Bento */
+.pb-scrapbook {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+.pb-scrap-item {
+    position: absolute;
+    width: 135px;
+    background: #fff;
+    padding: 5px 5px 18px 5px;
+    box-shadow: var(--shadow-soft);
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    border-radius: 1px;
+}
+.pb-scrap-item img {
+    height: 85px;
+    border: none;
+    border-radius: 0;
+}
+.pb-scrap-note {
+    font-family: 'Playfair Display', serif;
+    font-size: 8px;
+    color: var(--espresso);
+    text-align: center;
+    margin-top: 3px;
+    display: block;
+    font-style: italic;
+}
+.pb-tape {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-3deg);
+    width: 45px;
+    height: 12px;
+    background: rgba(var(--rose-rgb), 0.35);
+    backdrop-filter: blur(2px);
+    z-index: 5;
+}
+.pb-tape.tape-pink { background: rgba(217, 195, 190, 0.7); }
+.pb-tape.tape-gold { background: rgba(var(--rose-rgb), 0.4); }
+
+.pb-scrap-item:hover {
+    transform: rotate(0deg) scale(1.08) translateY(-4px) !important;
+    box-shadow: 0 15px 30px rgba(var(--rose-rgb), 0.2);
+    z-index: 20;
+}
+
+/* ========================================================
+   8. NEW ADVANCED CSS ANIMATIONS & EFFECTS
+ ======================================================== */
+/* --- Effect 1: 3D Pop-up Effect (.pb-effect-popup) --- */
+.pb-effect-popup {
+    perspective: 1000px;
+    transform-style: preserve-3d;
+}
+.pb-effect-popup img, 
+.pb-effect-popup .pb-polaroid, 
+.pb-effect-popup .pb-scrap-item, 
+.pb-effect-popup .pb-strip-frame {
+    opacity: 0;
+    transform: scale(0.9) translateZ(0) translateY(20px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    transition: none; /* Let animation handle it */
+}
+/* Trigger when .play-anim class is added by JS */
+.pb-effect-popup.play-anim img,
+.pb-effect-popup.play-anim .pb-polaroid,
+.pb-effect-popup.play-anim .pb-scrap-item,
+.pb-effect-popup.play-anim .pb-strip-frame {
+    animation: popUpAnim 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes popUpAnim {
+    0% {
+        opacity: 0;
+        transform: scale(0.9) translateZ(0) translateY(20px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    }
+    70% {
+        transform: scale(1.06) translateZ(30px) translateY(-8px);
+        box-shadow: 0 20px 40px rgba(var(--rose-rgb), 0.18);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1.03) translateZ(15px) translateY(0);
+        box-shadow: 0 12px 25px rgba(var(--rose-rgb), 0.12);
+    }
+}
+
+/* --- Effect 2: Clip-path Reveal Effect (.pb-effect-reveal) --- */
+.pb-effect-reveal img, 
+.pb-effect-reveal .pb-strip-frame, 
+.pb-effect-reveal .pb-film-frames img {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0); /* Start from fully clipped (curtain closed) */
+    transform: scale(1.02);
+}
+.pb-effect-reveal.play-anim img,
+.pb-effect-reveal.play-anim .pb-strip-frame,
+.pb-effect-reveal.play-anim .pb-film-frames img {
+    animation: clipRevealAnim 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes clipRevealAnim {
+    0% {
+        opacity: 0;
+        clip-path: inset(0 100% 0 0);
+        transform: scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        clip-path: inset(0 0 0 0);
+        transform: scale(1);
+    }
+}
+
+/* --- Effect 3: Polaroid Blur-In Effect (.pb-effect-blur-in) --- */
+.pb-effect-blur-in img, 
+.pb-effect-blur-in .pb-polaroid, 
+.pb-effect-blur-in .pb-scrap-item {
+    opacity: 0;
+    filter: blur(15px) grayscale(0.8) brightness(0.7);
+    transform: scale(0.96);
+}
+.pb-effect-blur-in.play-anim img,
+.pb-effect-blur-in.play-anim .pb-polaroid,
+.pb-effect-blur-in.play-anim .pb-scrap-item {
+    animation: polaroidBlurAnim 1.3s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes polaroidBlurAnim {
+    0% {
+        opacity: 0;
+        filter: blur(15px) grayscale(0.8) brightness(0.7);
+        transform: scale(0.96);
+    }
+    50% {
+        opacity: 0.8;
+        filter: blur(5px) grayscale(0.4) brightness(0.9);
+        transform: scale(1.01);
+    }
+    100% {
+        opacity: 1;
+        filter: blur(0) grayscale(0) brightness(1);
+        transform: scale(1);
+    }
+}
+
+/* --- Staggered delays for child items in animated parents --- */
+.pb-effect-popup.play-anim .pb-strip-frame:nth-child(1) { animation-delay: 0.1s; }
+.pb-effect-popup.play-anim .pb-strip-frame:nth-child(2) { animation-delay: 0.25s; }
+.pb-effect-popup.play-anim .pb-strip-frame:nth-child(3) { animation-delay: 0.4s; }
+.pb-effect-popup.play-anim .pb-strip-frame:nth-child(4) { animation-delay: 0.55s; }
+
+.pb-effect-popup.play-anim .pb-polaroid:nth-child(1) { animation-delay: 0.15s; }
+.pb-effect-popup.play-anim .pb-polaroid:nth-child(2) { animation-delay: 0.3s; }
+.pb-effect-popup.play-anim .pb-polaroid:nth-child(3) { animation-delay: 0.45s; }
+.pb-effect-popup.play-anim .pb-polaroid:nth-child(4) { animation-delay: 0.6s; }
+
+.pb-effect-popup.play-anim .pb-scrap-item:nth-child(1) { animation-delay: 0.15s; }
+.pb-effect-popup.play-anim .pb-scrap-item:nth-child(2) { animation-delay: 0.3s; }
+.pb-effect-popup.play-anim .pb-scrap-item:nth-child(3) { animation-delay: 0.45s; }
+.pb-effect-popup.play-anim .pb-scrap-item:nth-child(4) { animation-delay: 0.6s; }
+
+.pb-effect-popup.play-anim .pb-mosaic-item:nth-child(1) { animation-delay: 0.1s; }
+.pb-effect-popup.play-anim .pb-mosaic-item:nth-child(2) { animation-delay: 0.25s; }
+.pb-effect-popup.play-anim .pb-mosaic-item:nth-child(3) { animation-delay: 0.35s; }
+.pb-effect-popup.play-anim .pb-mosaic-item:nth-child(4) { animation-delay: 0.45s; }
+.pb-effect-popup.play-anim .pb-mosaic-item:nth-child(5) { animation-delay: 0.55s; }
+
+.pb-effect-popup.play-anim .pb-insta-item:nth-child(1) { animation-delay: 0.1s; }
+.pb-effect-popup.play-anim .pb-insta-item:nth-child(2) { animation-delay: 0.2s; }
+.pb-effect-popup.play-anim .pb-insta-item:nth-child(3) { animation-delay: 0.3s; }
+.pb-effect-popup.play-anim .pb-insta-item:nth-child(4) { animation-delay: 0.4s; }
+.pb-effect-popup.play-anim .pb-insta-item:nth-child(5) { animation-delay: 0.5s; }
+.pb-effect-popup.play-anim .pb-insta-item:nth-child(6) { animation-delay: 0.6s; }
+
+/* Clip Reveal delays */
+.pb-effect-reveal.play-anim .pb-strip-frame:nth-child(1) { animation-delay: 0.1s; }
+.pb-effect-reveal.play-anim .pb-strip-frame:nth-child(2) { animation-delay: 0.25s; }
+.pb-effect-reveal.play-anim .pb-strip-frame:nth-child(3) { animation-delay: 0.4s; }
+.pb-effect-reveal.play-anim .pb-strip-frame:nth-child(4) { animation-delay: 0.55s; }
+
+.pb-effect-reveal.play-anim .pb-film-frames img:nth-child(1) { animation-delay: 0.1s; }
+.pb-effect-reveal.play-anim .pb-film-frames img:nth-child(2) { animation-delay: 0.2s; }
+.pb-effect-reveal.play-anim .pb-film-frames img:nth-child(3) { animation-delay: 0.3s; }
+.pb-effect-reveal.play-anim .pb-film-frames img:nth-child(4) { animation-delay: 0.4s; }
+.pb-effect-reveal.play-anim .pb-film-frames img:nth-child(5) { animation-delay: 0.5s; }
+
+.pb-effect-reveal.play-anim .pb-insta-item:nth-child(1) { animation-delay: 0.1s; }
+.pb-effect-reveal.play-anim .pb-insta-item:nth-child(2) { animation-delay: 0.2s; }
+.pb-effect-reveal.play-anim .pb-insta-item:nth-child(3) { animation-delay: 0.3s; }
+.pb-effect-reveal.play-anim .pb-insta-item:nth-child(4) { animation-delay: 0.4s; }
+.pb-effect-reveal.play-anim .pb-insta-item:nth-child(5) { animation-delay: 0.5s; }
+.pb-effect-reveal.play-anim .pb-insta-item:nth-child(6) { animation-delay: 0.6s; }
+
+/* Blur-in delays */
+.pb-effect-blur-in.play-anim .pb-polaroid:nth-child(1) { animation-delay: 0.1s; }
+.pb-effect-blur-in.play-anim .pb-polaroid:nth-child(2) { animation-delay: 0.25s; }
+.pb-effect-blur-in.play-anim .pb-polaroid:nth-child(3) { animation-delay: 0.4s; }
+.pb-effect-blur-in.play-anim .pb-polaroid:nth-child(4) { animation-delay: 0.55s; }
+
+.pb-effect-blur-in.play-anim .pb-scrap-item:nth-child(1) { animation-delay: 0.1s; }
+.pb-effect-blur-in.play-anim .pb-scrap-item:nth-child(2) { animation-delay: 0.25s; }
+.pb-effect-blur-in.play-anim .pb-scrap-item:nth-child(3) { animation-delay: 0.4s; }
+.pb-effect-blur-in.play-anim .pb-scrap-item:nth-child(4) { animation-delay: 0.55s; }
+
+/* ========================================================
+   9. COVER LAYOUTS & PHÊ LA UTILITIES
+======================================================== */
+.title-brown {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    color: var(--espresso);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.bg-red {
+    background: linear-gradient(165deg, var(--beige-pink) 0%, rgba(var(--rose-rgb), 0.25) 100%) !important;
+}
+
+.cover-layout { 
+    padding: 0 !important; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: flex-end; 
+    position: relative;
+    border-radius: 0 12px 12px 0;
+}
+
+/* Trang 1 — bìa HiAn Cake + logo + nền mờ */
+.cover-layout--brand {
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: var(--beige-pink);
+}
+.cover-layout--brand::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+        165deg,
+        rgba(255, 255, 255, 0.78) 0%,
+        rgba(250, 218, 224, 0.72) 50%,
+        rgba(255, 255, 255, 0.82) 100%
+    );
+    pointer-events: none;
+}
+.cover-brand-bg {
+    position: absolute;
+    inset: -8%;
+    width: 116%;
+    height: 116%;
+    object-fit: cover;
+    z-index: 0;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    filter: blur(14px) saturate(1.05) brightness(1.02);
+    transform: scale(1.06);
+    opacity: 0.9;
+    pointer-events: none;
+}
+.cover-brand {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 28px 24px;
+    max-width: 92%;
+}
+.cover-brand-logo {
+    width: min(72%, 280px);
+    max-height: 52%;
+    height: auto;
+    object-fit: contain;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    filter: none;
+    margin-bottom: 12px;
+}
+.cover-brand-arc {
+    font-family: var(--font-heading);
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+.cover-brand-name {
+    font-family: var(--font-heading);
+    font-size: clamp(28px, 6vw, 38px);
+    font-weight: 600;
+    font-style: italic;
+    color: var(--espresso);
+    letter-spacing: 0.04em;
+    margin: 0 0 10px;
+    line-height: 1.15;
+    background: none;
+    -webkit-text-fill-color: var(--espresso);
+}
+.cover-brand-slogan {
+    font-size: 11px;
+    line-height: 1.65;
+    color: var(--text-muted);
+    max-width: 280px;
+    margin: 0;
+}
+
+.bento-img-wrap--fill {
+    flex: 0 0 auto;
+    width: 100%;
+    max-height: calc(100% - 40px);
+}
+
+.bento-img-wrap--inline {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 48px;
+    aspect-ratio: 3 / 4;
+    padding: 2px;
+}
+.bento-card > div[style*="display:flex"] {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+}
+
+.pb-strip-frame {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 4px;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.pb-strip-frame img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+.cover-bg { 
+    position: absolute; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    z-index: 1; 
+    opacity: 0.35; 
+    border-radius: 0;
+    border: none !important;
+    filter: sepia(0.12) brightness(0.92) contrast(1.02);
+}
+.cover-overlay { 
+    position: relative; 
+    z-index: 2; 
+    background: rgba(255, 255, 255, 0.92); 
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(var(--rose-rgb), 0.3);
+    color: var(--espresso); 
+    padding: 24px; 
+    margin: 20px; 
+    text-align: center; 
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft);
+}
+.cover-overlay h1 { 
+    font-family: var(--font-heading); 
+    font-size: 24px; 
+    margin: 8px 0; 
+    letter-spacing: 3px;
+    background: var(--gold-metallic);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-transform: uppercase;
+}
+.cover-overlay p { 
+    font-size: 11px; 
+    line-height: 1.6; 
+    color: var(--text-muted);
+}
+.cover-logo-box {
+    font-family: var(--font-heading);
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--text-gold);
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+/* Cover Info Blocks */
+.cover-info-block {
+    position: absolute;
+    color: var(--text-white);
+    width: 155px;
+    z-index: 10;
+    pointer-events: none;
+    background: rgba(246, 243, 238, 0.82);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(var(--rose-rgb), 0.25);
+    padding: 10px;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+.cover-info-block.top-left { top: 40px; left: 24px; }
+.cover-info-block.top-right { top: 90px; right: 24px; text-align: right; }
+.cover-info-block.mid-left { top: 220px; left: 24px; }
+.cover-info-block.mid-right { top: 290px; right: 24px; text-align: right; }
+
+.cover-info-block h3 {
+    font-size: 10.5px;
+    font-family: var(--font-heading);
+    margin-bottom: 2px;
+    letter-spacing: 1px;
+    color: var(--text-gold);
+    text-transform: uppercase;
+}
+.cover-info-block p {
+    font-size: 9px;
+    line-height: 1.4;
+    color: var(--text-muted);
+}
+
+/* ========================================================
+   10. ENTRANCE STYLES (OPACITY FLIP PREPARATION)
+======================================================== */
+.front .bento-card,
+.back .bento-card {
+    opacity: 0;
+    transform: translateY(15px) scale(0.97);
+    transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.paper.active-left .back .bento-card,
+.paper.active-right .front .bento-card {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Staggered load delays for Bento Box components */
+.paper.active-left .back .bento-card:nth-child(1),
+.paper.active-right .front .bento-card:nth-child(1) { transition-delay: 0.05s; }
+.paper.active-left .back .bento-card:nth-child(2),
+.paper.active-right .front .bento-card:nth-child(2) { transition-delay: 0.15s; }
+.paper.active-left .back .bento-card:nth-child(3),
+.paper.active-right .front .bento-card:nth-child(3) { transition-delay: 0.25s; }
+.paper.active-left .back .bento-card:nth-child(4),
+.paper.active-right .front .bento-card:nth-child(4) { transition-delay: 0.35s; }
+.paper.active-left .back .bento-card:nth-child(5),
+.paper.active-right .front .bento-card:nth-child(5) { transition-delay: 0.45s; }
+.paper.active-left .back .bento-card:nth-child(6),
+.paper.active-right .front .bento-card:nth-child(6) { transition-delay: 0.55s; }
+
+/* Custom Back Cover */
+.white-box { 
+    background: rgba(246, 243, 238, 0.75);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-glass);
+    width: 100%; 
+    height: 100%; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column; 
+    border-radius: 12px;
+}
+.stack-img-container {
+    flex: 1;
+    display: flex;
+    gap: 12px;
+    margin-bottom: 15px;
+    min-height: 0;
+}
+.stack-img-container img {
+    width: 50%;
+    height: 100%;
+}
+.qr-section { 
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+    border-top: 1px solid rgba(var(--rose-rgb), 0.2); 
+    padding-top: 15px; 
+    margin-top: auto;
+}
+.qr-icon { 
+    font-size: 45px; 
+    color: var(--text-gold); 
+    text-shadow: 0 0 10px rgba(var(--rose-rgb), 0.15);
+}
+.info-text p { 
+    font-size: 9.5px; 
+    color: var(--text-muted); 
+    margin-bottom: 3px; 
+}
+
+/* ========================================================
+   11. RESPONSIVE — mobile: 1 mặt (JS .mobile-view), nút & padding nhỏ hơn
+======================================================== */
+@media (max-width: 768px) {
+    html,
+    body {
+        height: 100%;
+        height: 100dvh;
+        min-height: 100dvh;
+        overflow: hidden;
+    }
+
+    body {
+        align-items: stretch;
+        padding: 0;
+    }
+
+    .book-container {
+        padding: 0;
+        min-height: 100dvh;
+        height: 100dvh;
+        width: 100%;
+        max-width: 100vw;
+        align-items: stretch;
+    }
+
+    .flipbook-shell {
+        display: block;
+        width: 100%;
+        max-width: 100vw;
+        height: 100dvh;
+        position: relative;
+        margin: 0;
+    }
+
+    .book-stage {
+        grid-column: auto;
+        width: 100% !important;
+        height: 100dvh !important;
+        max-width: 100vw;
+        max-height: 100dvh;
+        justify-content: center !important;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .book {
+        margin: 0 auto;
+    }
+
+    .book-stage:has(.book.open),
+    .book-stage:has(.book.is-closing) {
+        justify-content: center;
+    }
+
+    .book.open,
+    .book.is-closing {
+        transform: translateX(0);
+    }
+
+    .nav-btn {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 1100;
+        grid-column: auto;
+        justify-self: auto;
+    }
+
+    .nav-btn--prev {
+        left: max(6px, env(safe-area-inset-left, 0px));
+    }
+
+    .nav-btn--next {
+        right: max(6px, env(safe-area-inset-right, 0px));
+    }
+
+    .nav-btn:hover:not(:disabled) {
+        transform: translateY(-50%) scale(1.08);
+    }
+
+    .nav-btn:disabled {
+        transform: translateY(-50%);
+    }
+}
+@media (max-width: 600px) {
+    :root {
+        --nav-btn-size: 40px;
+    }
+    .nav-btn {
+        font-size: 14px;
+    }
+    .front, .back { padding: 18px 14px; }
+    .giant-title { font-size: 20px; }
+    .bento-grid { gap: 8px; grid-auto-rows: minmax(52px, auto); }
+}
+
+/* ========================================================
+   12. LIGHTBOX — phóng to ảnh full màn hình
+======================================================== */
+body.lightbox-open {
+    overflow: hidden;
+}
+
+.image-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+        max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.image-lightbox.is-open {
+    pointer-events: auto;
+    visibility: visible;
+    opacity: 1;
+}
+
+.image-lightbox__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(89, 60, 66, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.image-lightbox__stage {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.image-lightbox__img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.image-lightbox__close {
+    position: absolute;
+    top: max(14px, env(safe-area-inset-top));
+    right: max(14px, env(safe-area-inset-right));
+    z-index: 2;
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--espresso);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.image-lightbox__close:hover {
+    background: #fff;
+    transform: scale(1.06);
+}
+
+.image-lightbox__close:focus-visible {
+    outline: 2px solid var(--rose);
+    outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+    .image-lightbox__close {
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+    }
+}
