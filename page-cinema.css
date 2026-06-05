@@ -1,0 +1,137 @@
+/* Page Cinema — decorative layers & FX (HiAn Cake) */
+.front,
+.back {
+    isolation: isolate;
+}
+
+.cinema-active {
+    position: relative;
+    overflow: hidden;
+}
+
+.cinema-fx {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4;
+    overflow: hidden;
+}
+
+.cinema-fx--above {
+    z-index: 12;
+}
+
+.cinema-light {
+    position: absolute;
+    width: 140%;
+    height: 140%;
+    left: -20%;
+    top: -20%;
+    background: radial-gradient(
+        circle at 50% 50%,
+        rgba(244, 151, 169, 0.22) 0%,
+        rgba(250, 218, 224, 0.08) 35%,
+        transparent 65%
+    );
+    opacity: 0;
+    mix-blend-mode: soft-light;
+    will-change: transform, opacity;
+}
+
+.cinema-particles {
+    position: absolute;
+    inset: 0;
+}
+
+.cinema-particle {
+    position: absolute;
+    border-radius: 50%;
+    will-change: transform, opacity;
+}
+
+.cinema-particle--spark {
+    background: radial-gradient(circle, #fff 0%, rgba(244, 151, 169, 0.9) 45%, transparent 70%);
+    box-shadow: 0 0 8px rgba(244, 151, 169, 0.5);
+}
+
+.cinema-particle--macaron {
+    border-radius: 48% 52% 50% 50%;
+    box-shadow: inset -2px -4px 8px rgba(89, 60, 66, 0.12), var(--shadow-soft);
+}
+
+.cinema-drip {
+    position: absolute;
+    top: -8%;
+    left: 12%;
+    width: 18px;
+    height: 0;
+    background: linear-gradient(180deg, #593C42 0%, #8A6B72 55%, transparent 100%);
+    border-radius: 0 0 12px 12px;
+    opacity: 0.75;
+    filter: blur(0.3px);
+    transform-origin: top center;
+}
+
+.cinema-swirl {
+    position: absolute;
+    right: -12%;
+    bottom: -18%;
+    width: 55%;
+    height: 55%;
+    opacity: 0.35;
+}
+
+.cinema-swirl path {
+    fill: none;
+    stroke: rgba(244, 151, 169, 0.45);
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.cinema-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 90% 85% at 50% 50%, transparent 72%, rgba(89, 60, 66, 0.06) 100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Trang trái spread: không phủ lớp tối che nội dung */
+.paper.active-left .back .cinema-vignette,
+.paper.active-left .back .cinema-light {
+    display: none !important;
+}
+
+.cinema-img-3d {
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+.cinema-img-3d img {
+    box-shadow: 0 18px 40px rgba(89, 60, 66, 0.18), 0 6px 16px rgba(244, 151, 169, 0.15);
+}
+
+.cinema-blur-enter {
+    filter: blur(12px);
+}
+
+.cinema-split-parent {
+    overflow: hidden;
+}
+
+.cinema-split-line {
+    overflow: hidden;
+    display: block;
+}
+
+.cinema-split-word,
+.cinema-split-char {
+    display: inline-block;
+    will-change: transform, opacity, filter;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cinema-fx {
+        display: none !important;
+    }
+}

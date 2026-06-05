@@ -181,12 +181,13 @@ img:not(.cover-brand-bg):not(.cover-brand-logo) {
     height: var(--book-height, 640px);
     position: relative;
     transform-style: preserve-3d;
-    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: none;
     box-shadow: var(--shadow-book);
     border-radius: 12px;
     touch-action: pan-y;
     cursor: grab;
     user-select: none;
+    will-change: transform;
 }
 .book.is-dragging { cursor: grabbing; }
 
@@ -194,6 +195,13 @@ img:not(.cover-brand-bg):not(.cover-brand-logo) {
 .book.open,
 .book.is-closing {
     transform: translateX(calc(var(--book-stage-width) - var(--book-width)));
+}
+/* GSAP điều khiển translateX mượt hơn trên desktop */
+.book.gsap-drive.open,
+.book.gsap-drive.is-closing,
+.book.gsap-drive.closed-front,
+.book.gsap-drive.closed-back {
+    transform: none;
 }
 
 /* Mobile: luôn 1 mặt, căn giữa, không spread */
@@ -272,10 +280,15 @@ img:not(.cover-brand-bg):not(.cover-brand-logo) {
     pointer-events: none;
 }
 
-/* Bìa sau: hiển thị như bìa trước (rotate 0, chỉ mặt back) */
+/* Bìa sau đóng: reset về 0° (giống bìa trước), chỉ hiện mặt back nhìn thẳng */
 .book.closed-back .paper:last-child {
     z-index: 999 !important;
     transform: rotateY(0deg) !important;
+    -webkit-transform: rotateY(0deg) !important;
+}
+.book.closed-back .paper:last-child.flipped {
+    transform: rotateY(0deg) !important;
+    -webkit-transform: rotateY(0deg) !important;
 }
 .book.closed-back .paper:last-child .front {
     visibility: hidden;
@@ -291,6 +304,10 @@ img:not(.cover-brand-bg):not(.cover-brand-logo) {
 }
 .book.closed-back .paper:last-child .back.cover-layout::after {
     border-radius: 8px;
+}
+/* Desktop đóng sách: tắt hiệu ứng cinema trên bìa sau để giống bìa trước */
+.book.closed-back:not(.mobile-view) .paper:last-child .back.cover-layout.cinema-active .cinema-fx {
+    display: none !important;
 }
 
 /* Bìa trước đóng — đảm bảo chỉ thấy 1 trang */
@@ -310,13 +327,42 @@ img:not(.cover-brand-bg):not(.cover-brand-logo) {
     top: 0; left: 0;
     transform-style: preserve-3d;
     transform-origin: left center;
-    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), z-index 0.8s;
+    transition: none;
+    transform: rotateY(0deg);
+    -webkit-transform: rotateY(0deg);
 }
-.paper.dragging {
+.paper.dragging,
+.paper.is-flipping {
     transition: none;
 }
+.paper.is-flipping {
+    will-change: transform;
+}
+.paper.flipped {
+    transform: rotateY(-180deg);
+    -webkit-transform: rotateY(-180deg);
+}
 
-.paper.flipped { transform: rotateY(-180deg); }
+/* Bóng mép trang khi lật — chỉ hiện lúc đang lật, không phủ trang tĩnh */
+.paper .page-fold-shadow {
+    position: absolute;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0;
+    visibility: hidden;
+    background: linear-gradient(
+        90deg,
+        rgba(var(--espresso-rgb), 0.22) 0%,
+        rgba(var(--espresso-rgb), 0.06) 18%,
+        transparent 42%
+    );
+}
+.paper.is-flipping .page-fold-shadow,
+.paper.dragging .page-fold-shadow {
+    visibility: visible;
+}
 
 .front, .back {
     position: absolute !important;
@@ -401,6 +447,69 @@ img:not(.cover-brand-bg):not(.cover-brand-logo) {
 .bento-grid--portrait-mosaic .bento-card--heading {
     padding: 10px 12px;
     min-height: 0;
+}
+
+/* Trang 2–3: tiêu đề + SĐT / địa chỉ — luôn hiển thị, không tràn */
+.bento-card--info-hero {
+    overflow: visible;
+    padding: 12px 14px;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+    min-height: 72px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.94) 0%, rgba(250, 218, 224, 0.5) 100%);
+    border: 1.5px solid rgba(var(--rose-rgb), 0.42);
+    box-shadow: 0 8px 22px rgba(var(--rose-rgb), 0.12);
+}
+.bento-card--info-hero .subtitle {
+    color: var(--rose);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    opacity: 1;
+}
+.info-hero__phone {
+    font-family: var(--font-heading);
+    font-size: clamp(20px, 5vw, 26px);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--primary-red);
+    letter-spacing: 0.06em;
+    margin: 2px 0 0;
+    -webkit-text-fill-color: var(--primary-red);
+    background: none;
+    text-transform: none;
+    word-break: keep-all;
+}
+.info-hero__title {
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--espresso);
+    margin: 2px 0 0;
+    text-transform: none;
+    letter-spacing: 0.02em;
+}
+.info-hero__line {
+    font-family: var(--font-body);
+    font-size: 10.5px;
+    font-weight: 500;
+    line-height: 1.45;
+    color: var(--espresso);
+    margin: 0;
+    text-transform: none;
+    letter-spacing: 0.01em;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+}
+.bento-card--info-hero,
+.bento-card--info-hero .subtitle,
+.bento-card--info-hero .info-hero__phone,
+.bento-card--info-hero .info-hero__title,
+.bento-card--info-hero .info-hero__line {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
 }
 .bento-grid--portrait-mosaic .bento-card--photo {
     padding: 6px;
@@ -579,7 +688,7 @@ img:not(.cover-brand-bg):not(.cover-brand-logo) {
 /* Oversized Typography for impactful first impression */
 .giant-title {
     font-family: var(--font-heading);
-    font-size: 26px;
+    font-size: 18px;
     font-weight: 700;
     line-height: 1.2;
     background: var(--gold-metallic);
@@ -1533,11 +1642,34 @@ img:not(.cover-brand-bg):not(.cover-brand-logo) {
     transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), 
                 transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+.front .bento-card--info-hero,
+.back .bento-card--info-hero {
+    opacity: 1 !important;
+    transform: none !important;
+}
+.book.gsap-drive .front .bento-card,
+.book.gsap-drive .back .bento-card {
+    transition: none;
+}
 
 .paper.active-left .back .bento-card,
 .paper.active-right .front .bento-card {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    opacity: 1 !important;
+    transform: translateY(0) scale(1) !important;
+    visibility: visible;
+}
+
+/* Trang trái (mặt sau đã lật): luôn hiển thị rõ, không bị GSAP / cinema overlay che */
+.paper.active-left.flipped .back,
+.paper.active-left.flipped .back .bento-card,
+.paper.active-left.flipped .back img,
+.paper.active-left .back .bento-img-wrap,
+.paper.active-left .back .bento-img-wrap img {
+    opacity: 1 !important;
+    filter: brightness(1) contrast(1.03) saturate(1) !important;
+}
+.paper.active-left .back .cinema-fx--above {
+    opacity: 0.35;
 }
 
 /* Staggered load delays for Bento Box components */

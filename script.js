@@ -103,15 +103,25 @@
     const nextBtn = document.getElementById("next-btn");
     const book = document.getElementById("book");
     const papers = document.querySelectorAll(".paper");
+    const flipbookShell = document.getElementById("flipbook-shell");
 
-    const BOOK_ASPECT = 480 / 640; /* tá»· lá»‡ má»™t trang */
+    const BOOK_ASPECT = 480 / 640;
     const MOBILE_BREAKPOINT = 768;
     const DRAG_THRESHOLD = 55;
 
     const mobileMedia = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+    const reducedMotionMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     function isMobile() {
         return mobileMedia.matches;
+    }
+
+    function prefersReducedMotion() {
+        return reducedMotionMedia.matches;
+    }
+
+    function flipDuration() {
+        return prefersReducedMotion() ? 0.01 : 0.9;
     }
 
     let currentLocation = 1;
@@ -119,9 +129,293 @@
     let maxLocation = numOfPapers + 1;
 
     let isDragging = false;
+    let isFlipAnimating = false;
     let dragStartX = 0;
     let dragPaper = null;
-    let dragDirection = 0; // -1 = láº­t tá»›i, 1 = láº­t lui
+    let dragDirection = 0;
+
+    const paperRotY = new Map();
+    const paperScaleX = new Map();
+    const paperFoldOpacity = new Map();
+
+    function initGsapFlipEngine() {
+        if (typeof gsap === "undefined") return;
+
+        papers.forEach((paper) => {
+            if (!paper.querySelector(".page-fold-shadow")) {
+                const fold = document.createElement("div");
+                fold.className = "page-fold-shadow";
+                fold.setAttribute("aria-hidden", "true");
+                paper.appendChild(fold);
+            }
+
+            const startRot = paper.classList.contains("flipped") ? -180 : 0;
+            gsap.set(paper, {
+                rotationY: startRot,
+                rotationX: 0,
+                scaleX: 1,
+                z: 0,
+                transformStyle: "preserve-3d",
+                transformOrigin: "left center",
+                force3D: true
+            });
+
+            paperRotY.set(paper, gsap.quickSetter(paper, "rotationY", "deg"));
+            paperScaleX.set(paper, gsap.quickSetter(paper, "scaleX"));
+            const foldEl = paper.querySelector(".page-fold-shadow");
+            if (foldEl) {
+                paperFoldOpacity.set(paper, gsap.quickSetter(foldEl, "opacity"));
+            }
+        });
+    }
+
+    function updatePageFlipFX(paper, rotY) {
+        const progress = Math.min(1, Math.abs(rotY) / 180);
+        const curve = Math.sin(progress * Math.PI);
+        const scaleX = 1 - curve * 0.042;
+        const lift = curve * 3;
+        const foldOpacity = curve * 0.65;
+
+        const setScale = paperScaleX.get(paper);
+        const setFold = paperFoldOpacity.get(paper);
+        if (setScale) setScale(scaleX);
+        gsap.set(paper, { z: lift });
+
+        showFoldShadow(paper, foldOpacity);
+
+        const shadowPx = curve * 32;
+        if (shadowPx > 0.5) {
+            paper.style.boxShadow = `${-shadowPx}px 0 ${shadowPx * 1.5}px rgba(89, 60, 66, ${0.05 + curve * 0.18})`;
+        } else {
+            paper.style.boxShadow = "";
+        }
+    }
+
+    function resetPageFlipFX(paper) {
+        gsap.set(paper, { rotationX: 0, z: 0, scaleX: 1 });
+        paper.style.boxShadow = "";
+        const foldEl = paper.querySelector(".page-fold-shadow");
+        if (foldEl) {
+            gsap.set(foldEl, { opacity: 0, clearProps: "opacity" });
+            foldEl.style.visibility = "hidden";
+        }
+    }
+
+    function showFoldShadow(paper, opacity) {
+        const foldEl = paper.querySelector(".page-fold-shadow");
+        if (!foldEl) return;
+        foldEl.style.visibility = opacity > 0.02 ? "visible" : "hidden";
+        const setFold = paperFoldOpacity.get(paper);
+        if (setFold) setFold(opacity);
+    }
+
+    function getActiveBentoCards(paper) {
+        if (!paper) return [];
+        const selector = paper.classList.contains("mobile-show-back") || paper.classList.contains("active-left")
+            ? ".back .bento-card"
+            : ".front .bento-card";
+        return Array.from(paper.querySelectorAll(selector));
+    }
+
+    function revealActiveBentoCards(paper) {
+        if (!paper) return;
+        const cards = getActiveBentoCards(paper);
+        const face = paper.classList.contains("active-left") || paper.classList.contains("mobile-show-back")
+            ? paper.querySelector(".back")
+            : paper.querySelector(".front");
+
+        if (cards.length) {
+            gsap.killTweensOf(cards);
+            gsap.set(cards, { opacity: 1, clearProps: "opacity,transform,y,scale,filter" });
+        }
+
+        if (face && typeof gsap !== "undefined") {
+            const media = face.querySelectorAll(".bento-img-wrap, .bento-img-wrap img, img[data-img-key]");
+            gsap.killTweensOf(media);
+            gsap.set(media, { opacity: 1, filter: "blur(0px)", clearProps: "opacity,filter" });
+            const infoHero = face.querySelectorAll(".bento-card--info-hero, .info-hero__phone, .info-hero__title, .info-hero__line");
+            gsap.killTweensOf(infoHero);
+            gsap.set(infoHero, { opacity: 1, filter: "blur(0px)", clearProps: "opacity,filter,transform" });
+        }
+    }
+
+    function syncPaperRotation(paper, flipped) {
+        if (typeof gsap === "undefined") return;
+        gsap.killTweensOf(paper);
+        gsap.set(paper, { rotationY: flipped ? -180 : 0 });
+        resetPageFlipFX(paper);
+    }
+
+    function getBookSpreadX() {
+        const stageW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--book-stage-width")) || 960;
+        const pageW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--book-width")) || 480;
+        const isOpen = book.classList.contains("open") || book.classList.contains("is-closing");
+        return isOpen ? stageW - pageW : 0;
+    }
+
+    function syncBookPosition() {
+        if (typeof gsap === "undefined" || isMobile()) return;
+        book.classList.add("gsap-drive");
+        gsap.set(book, { x: getBookSpreadX() });
+    }
+
+    /** Đồng bộ tư thế 3D khi đóng sách — GSAP inline transform phải khớp CSS closed-front / closed-back */
+    function syncClosedCoverPose() {
+        if (typeof gsap === "undefined") return;
+
+        const firstPaper = papers[0];
+        const lastPaper = papers[numOfPapers - 1];
+
+        if (book.classList.contains("closed-back") && lastPaper) {
+            gsap.killTweensOf(lastPaper);
+            gsap.set(lastPaper, {
+                rotationY: 0,
+                rotationX: 0,
+                scaleX: 1,
+                z: 0,
+                transformOrigin: "left center"
+            });
+            lastPaper.classList.remove("flipped", "is-flipping", "dragging");
+            resetPageFlipFX(lastPaper);
+            revealActiveBentoCards(lastPaper);
+        } else if (book.classList.contains("closed-front") && firstPaper) {
+            gsap.killTweensOf(firstPaper);
+            gsap.set(firstPaper, {
+                rotationY: 0,
+                rotationX: 0,
+                scaleX: 1,
+                z: 0,
+                transformOrigin: "left center"
+            });
+            firstPaper.classList.remove("flipped", "is-flipping", "dragging");
+            resetPageFlipFX(firstPaper);
+            revealActiveBentoCards(firstPaper);
+        }
+
+        if (!isMobile()) {
+            gsap.killTweensOf(book);
+            gsap.set(book, { x: 0 });
+        }
+    }
+
+    function animateBookSpread(open, onComplete) {
+        if (typeof gsap === "undefined" || isMobile()) {
+            onComplete?.();
+            return;
+        }
+
+        book.classList.add("gsap-drive");
+        const targetX = open
+            ? (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--book-stage-width")) || 960) -
+              (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--book-width")) || 480)
+            : 0;
+
+        gsap.to(book, {
+            x: targetX,
+            duration: flipDuration(),
+            ease: "power2.inOut",
+            overwrite: true,
+            onComplete: () => {
+                syncBookPosition();
+                onComplete?.();
+            }
+        });
+    }
+
+    function animatePageFlip(paper, toFlipped, onComplete) {
+        if (typeof gsap === "undefined" || isMobile() || prefersReducedMotion()) {
+            if (toFlipped) paper.classList.add("flipped");
+            else paper.classList.remove("flipped");
+            syncPaperRotation(paper, toFlipped);
+            onComplete?.();
+            return;
+        }
+
+        gsap.killTweensOf(paper);
+        paper.classList.add("is-flipping");
+        paper.classList.remove("dragging");
+
+        const targetRot = toFlipped ? -180 : 0;
+        const startRot = gsap.getProperty(paper, "rotationY") || 0;
+
+        const tl = gsap.timeline({
+            onComplete: () => {
+                paper.classList.remove("is-flipping");
+                if (toFlipped) paper.classList.add("flipped");
+                else paper.classList.remove("flipped");
+                resetPageFlipFX(paper);
+                onComplete?.();
+            }
+        });
+
+        tl.to(paper, {
+            rotationY: targetRot,
+            duration: flipDuration(),
+            ease: "power2.inOut",
+            onUpdate: () => {
+                const ry = gsap.getProperty(paper, "rotationY");
+                updatePageFlipFX(paper, ry);
+            }
+        }, 0);
+
+        if (!prefersReducedMotion()) {
+            const midBend = toFlipped ? -4.2 : 4.2;
+            tl.fromTo(
+                paper,
+                { rotationX: 0 },
+                {
+                    rotationX: midBend,
+                    duration: flipDuration() * 0.38,
+                    ease: "sine.inOut",
+                    yoyo: true,
+                    repeat: 1
+                },
+                0
+            );
+        }
+
+        if (startRot === targetRot) {
+            tl.progress(1);
+        }
+    }
+
+    function animateBentoEntrance(paper) {
+        if (!paper) return;
+
+        const cards = getActiveBentoCards(paper);
+        if (!cards.length) return;
+
+        revealActiveBentoCards(paper);
+
+        if (typeof gsap === "undefined" || prefersReducedMotion()) return;
+
+        gsap.fromTo(
+            cards,
+            { y: 18, scale: 0.97 },
+            {
+                y: 0,
+                scale: 1,
+                duration: 0.55,
+                stagger: 0.06,
+                ease: "power3.out",
+                overwrite: true,
+                onComplete: () => revealActiveBentoCards(paper)
+            }
+        );
+    }
+
+    function initBookEntrance() {
+        if (typeof gsap === "undefined" || !flipbookShell || prefersReducedMotion()) return;
+
+        gsap.from(flipbookShell, {
+            opacity: 0,
+            y: 28,
+            scale: 0.94,
+            duration: 1.05,
+            ease: "power3.out",
+            delay: 0.12
+        });
+    }
 
     // Load images dynamically from the configuration object
     const FRAME_CLASSES = [
@@ -373,9 +667,12 @@
         flipSound.play().catch(e => console.log("Audio autoplay blocked by browser"));
     }
 
-    // Manage book translation based on state (Ä‘Ã³ng / má»Ÿ / bÃ¬a sau)
-    function checkBookState() {
+    function checkBookState(animateSpread = false) {
+        const wasOpen = book.classList.contains("open") || book.classList.contains("is-closing");
+
         book.classList.remove("closed-front", "closed-back", "open");
+
+        let willOpen = false;
 
         if (currentLocation === 1) {
             book.classList.add("closed-front");
@@ -383,9 +680,32 @@
             book.classList.add("closed-back");
         } else {
             book.classList.add("open");
+            willOpen = true;
         }
+
         updateBookLayout();
         updateMobileView();
+
+        if (currentLocation === 1 || currentLocation === maxLocation) {
+            syncClosedCoverPose();
+        }
+
+        if (!isMobile() && typeof gsap !== "undefined") {
+            if (animateSpread) {
+                if (willOpen && !wasOpen) {
+                    gsap.set(book, { x: 0 });
+                    animateBookSpread(true);
+                } else if (!willOpen && wasOpen) {
+                    animateBookSpread(false, () => {
+                        syncClosedCoverPose();
+                    });
+                } else {
+                    syncBookPosition();
+                }
+            } else {
+                syncBookPosition();
+            }
+        }
     }
 
     /** Mobile: chá»‰ hiá»‡n 1 máº·t trang táº¡i má»—i vá»‹ trÃ­ (láº­t tuáº§n tá»±) */
@@ -428,6 +748,22 @@
         });
     }
 
+    function runPageCinema() {
+        if (typeof PageCinema === "undefined") return;
+        const targets = PageCinema.getActivePapers(
+            book,
+            isMobile,
+            currentLocation,
+            papers,
+            maxLocation
+        );
+        PageCinema.sync(targets, {
+            reducedMotion: prefersReducedMotion(),
+            isMobile: isMobile()
+        });
+        targets.forEach((paper) => revealActiveBentoCards(paper));
+    }
+
     /** Mobile: reset rá»“i báº­t láº¡i active Ä‘á»ƒ cháº¡y láº¡i hiá»‡u á»©ng Ä‘an xen má»—i láº§n Ä‘á»•i trang */
     function triggerMobilePageEntrance(visible) {
         if (!visible) return;
@@ -443,7 +779,10 @@
 
         requestAnimationFrame(() => {
             visible.classList.add(activeClass);
+            revealActiveBentoCards(visible);
             playEffectsOnPaper(visible);
+            animateBentoEntrance(visible);
+            runPageCinema();
         });
     }
 
@@ -487,19 +826,21 @@
                 } else {
                     paper.classList.add("active-right");
                 }
-                
-                // JS tracking: TÃ¬m cÃ¡c pháº§n tá»­ hiá»‡u á»©ng trong paper Ä‘ang má»Ÿ vÃ  kÃ­ch hoáº¡t animation sau má»™t khoáº£ng delay nhá»
+
+                revealActiveBentoCards(paper);
                 playEffectsOnPaper(paper);
+                animateBentoEntrance(paper);
             } else {
                 paper.classList.remove("active-left", "active-right");
                 
-                // Gá»¡ class Ä‘á»ƒ reset tráº¡ng thÃ¡i khi trang khÃ´ng Ä‘Æ°á»£c hiá»ƒn thá»‹
                 const effectContainers = paper.querySelectorAll(".pb-effect-popup, .pb-effect-reveal, .pb-effect-blur-in");
                 effectContainers.forEach(container => {
                     container.classList.remove("play-anim");
                 });
             }
         });
+
+        runPageCinema();
     }
 
     /** Kích thước quyển sách full viewport (desktop: 2 trang khi mở; mobile: 1 trang full màn hình) */
@@ -550,68 +891,88 @@
         document.documentElement.style.setProperty("--book-height", `${height}px`);
         document.documentElement.style.setProperty("--book-stage-width", `${stageWidth}px`);
         document.documentElement.style.setProperty("--book-scale", "1");
+        syncBookPosition();
     }
 
     function clearDragTransform(paper) {
         if (!paper) return;
         paper.classList.remove("dragging");
-        paper.style.transform = "";
+        if (typeof gsap !== "undefined") {
+            const flipped = paper.classList.contains("flipped");
+            syncPaperRotation(paper, flipped);
+        } else {
+            paper.style.transform = "";
+        }
+    }
+
+    function setNavLocked(locked) {
+        isFlipAnimating = locked;
+        prevBtn.disabled = locked || currentLocation === 1;
+        nextBtn.disabled = locked || currentLocation === maxLocation;
     }
 
     function goNext(playAudio = true) {
-        if (currentLocation >= maxLocation) return false;
+        if (currentLocation >= maxLocation || isFlipAnimating) return false;
         if (playAudio) playSound();
 
         const currentPaper = papers[currentLocation - 1];
-        currentPaper.classList.add("flipped");
-        currentPaper.style.zIndex = String(currentLocation);
-        clearDragTransform(currentPaper);
+        setNavLocked(true);
 
-        currentLocation++;
-        const isFinalClose = currentLocation === maxLocation;
+        animatePageFlip(currentPaper, true, () => {
+            currentPaper.style.zIndex = String(currentLocation);
+            currentLocation++;
+            const isFinalClose = currentLocation === maxLocation;
 
-        if (isFinalClose) {
-            updateNavButtons();
-            updateMobileView();
-            updateActivePages();
+            if (isFinalClose) {
+                updateNavButtons();
+                updateMobileView();
+                updateActivePages();
 
-            if (isMobile()) {
-                updateBookLayout();
-                setTimeout(() => {
+                if (isMobile()) {
+                    updateBookLayout();
                     checkBookState();
                     updateActivePages();
-                }, 820);
+                    setNavLocked(false);
+                } else {
+                    book.classList.add("open", "is-closing");
+                    book.classList.remove("closed-back", "closed-front");
+                    updateBookLayout();
+                    animateBookSpread(false, () => {
+                        book.classList.remove("is-closing");
+                        checkBookState();
+                        updateActivePages();
+                        setNavLocked(false);
+                    });
+                }
             } else {
-                book.classList.add("open", "is-closing");
-                book.classList.remove("closed-back", "closed-front");
-                updateBookLayout();
-                setTimeout(() => {
-                    book.classList.remove("is-closing");
-                    checkBookState();
-                    updateActivePages();
-                }, 820);
+                const opening = currentLocation === 2;
+                checkBookState(opening);
+                updateNavButtons();
+                updateActivePages();
+                setNavLocked(false);
             }
-        } else {
-            checkBookState();
-            updateNavButtons();
-            updateActivePages();
-        }
+        });
+
         return true;
     }
 
     function goPrev(playAudio = true) {
-        if (currentLocation <= 1) return false;
+        if (currentLocation <= 1 || isFlipAnimating) return false;
         if (playAudio) playSound();
 
         const previousPaper = papers[currentLocation - 2];
-        previousPaper.classList.remove("flipped");
-        previousPaper.style.zIndex = String(numOfPapers - (currentLocation - 2));
-        clearDragTransform(previousPaper);
+        setNavLocked(true);
 
-        currentLocation--;
-        checkBookState();
-        updateNavButtons();
-        updateActivePages();
+        animatePageFlip(previousPaper, false, () => {
+            previousPaper.style.zIndex = String(numOfPapers - (currentLocation - 2));
+            currentLocation--;
+            const reopening = currentLocation === 1;
+            checkBookState(reopening);
+            updateNavButtons();
+            updateActivePages();
+            setNavLocked(false);
+        });
+
         return true;
     }
 
@@ -620,7 +981,9 @@
             return { paper: papers[currentLocation - 1], direction: -1, baseAngle: 0 };
         }
         if (direction > 0 && currentLocation > 1) {
-            return { paper: papers[currentLocation - 2], direction: 1, baseAngle: -180 };
+            const paper = papers[currentLocation - 2];
+            const closedBack = currentLocation === maxLocation && book.classList.contains("closed-back");
+            return { paper, direction: 1, baseAngle: closedBack ? 0 : -180 };
         }
         return null;
     }
@@ -696,6 +1059,7 @@
 
     function initPageDrag() {
         const onPointerDown = (e) => {
+            if (isFlipAnimating) return;
             if (isDragBlockedTarget(e.target)) return;
             if (e.button !== undefined && e.button !== 0) return;
 
@@ -731,7 +1095,14 @@
             const width = book.offsetWidth || parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--book-width")) || 480;
             const progress = Math.max(0, Math.min(1, Math.abs(deltaX) / (width * 0.45)));
             const angle = target.baseAngle + progress * -180 * target.direction;
-            dragPaper.style.transform = `rotateY(${angle}deg)`;
+
+            if (typeof gsap !== "undefined" && !isMobile()) {
+                const setRot = paperRotY.get(dragPaper);
+                if (setRot) setRot(angle);
+                updatePageFlipFX(dragPaper, angle);
+            } else {
+                dragPaper.style.transform = `rotateY(${angle}deg)`;
+            }
         };
 
         const finishDrag = (e) => {
@@ -749,7 +1120,12 @@
                 (deltaX > DRAG_THRESHOLD && goPrev());
 
             if (!didFlip && dragPaper) {
-                clearDragTransform(dragPaper);
+                const shouldBeFlipped = dragPaper.classList.contains("flipped");
+                if (typeof gsap !== "undefined" && !isMobile()) {
+                    animatePageFlip(dragPaper, shouldBeFlipped);
+                } else {
+                    clearDragTransform(dragPaper);
+                }
             }
 
             dragPaper = null;
@@ -857,10 +1233,19 @@
         });
     }
 
+    reducedMotionMedia.addEventListener("change", () => {
+        papers.forEach((paper) => {
+            syncPaperRotation(paper, paper.classList.contains("flipped"));
+        });
+        runPageCinema();
+    });
+
     // Initializations
     loadImages();
     initPhotoSlogans();
     initZIndex();
+    initGsapFlipEngine();
+    initBookEntrance();
     checkBookState();
     updateNavButtons();
     updateActivePages();
@@ -872,6 +1257,7 @@
     mobileMedia.addEventListener("change", () => {
         checkBookState();
         updateActivePages();
+        runPageCinema();
     });
 
     let resizeTimer;
